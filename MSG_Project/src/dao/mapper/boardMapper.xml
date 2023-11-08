@@ -1,0 +1,1323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="dao.BoardDao">
+
+	<select id="getEmpById" resultType="map" parameterType="string">
+		select *
+		from emp where empNo = #{empNo};
+	</select>
+
+	<!--////////////////////////////////// 공지사항 mapper ////////////////////////////////////////////// -->
+	<select id="getAllNotice" resultType="map">
+		select n.*,e.* from
+		(select boardNo,
+		status,
+		writer,
+		title,
+		viewCount,
+		date_format(writedate,"%Y-%m-%d") as writeDate,
+		uploadFile,  
+		content  
+		from noticeBoard)n
+		left join emp e on n.writer = e.empno
+		where status = 1
+		order by boardNo desc;
+	</select>
+
+	<insert id="insertNotice" parameterType="map">
+		insert into
+		noticeBoard(status,writer,title,writeDate,viewCount,uploadFile,content)
+		values
+		(1,#{WRITER},#{TITLE},current_timestamp,0,#{UPLOADFILE},#{CONTENT});
+	</insert>
+
+	<insert id="insertAttachNotice" parameterType="map">
+		insert into
+		uploadFromNoticeB
+		(fileName,boardNo,fileSize)
+		values(#{FILENAME},#{BOARDNO},#{FILESIZE})
+	</insert>
+
+	<select id="totalNoticeBoardCount" parameterType="map"
+		resultType="int">
+		select count(*) from boardNoticeInfo
+		where 1=0
+		<if test="TITLE != null">
+			or title like concat('%',#{TITLE},'%')
+		</if>
+		<if test="EMPNAME != null">
+			or empName like concat('%',#{EMPNAME},'%')
+		</if>
+		<if test="CONTENT != null">
+			or content like concat('%',#{CONTENT},'%')
+		</if>
+		<if test="type == 0 ">
+			or 1=1
+		</if>
+	</select>
+
+	<select id="searchNotice" parameterType="map" resultType="map">
+		select b1.* from (
+		select b.*,count(c.cmtNo) as cCount, @rownum:=@rownum+1 as
+		rnum,date_format(b.writeDate,"%Y-%m-%d %h:%i") as writeDate1
+		from boardNoticeInfo b left join commentFromEventb c on b.boardNo =
+		c.boardNo,(select @rownum:=0)r
+		where 1=0
+		<if test="TITLE != null"> or title like concat('%',#{TITLE},'%')</if>
+		<if test="EMPNAME != null"> or empName like concat('%',#{EMPNAME},'%')</if>
+		<if test="CONTENT != null"> or content like concat('%',#{CONTENT},'%')</if>
+		<if test="type == 0 "> or 1=1</if> and status = 1
+		group by b.boardNo,b.empName,b.status,b.writer,b.title,b.writeDate,b.viewCount,b.uploadFile
+		order by boardNo desc) b1
+		where rnum limit #{firstRow},10;
+	</select>
+
+	<select id="getPreviousNotice" parameterType="int"
+		resultType="map">
+		select boardNo,title from noticeBoard where boardNo <![CDATA[ < ]]>
+		#{boardNo} order by boardNo desc limit 1;
+	</select>
+
+	<select id="getNextNotice" parameterType="int" resultType="map">
+		select * from noticeBoard where boardNo <![CDATA[ > ]]>
+		#{boardNo} order by boardNo limit 1;
+	</select>
+
+	<select id="selectOneNotice" parameterType="int"
+		resultType="map">
+		select * from boardNoticeInfo
+		where boardNo = #{boardNo}
+	</select>
+
+	<select id="selectOneNotice1" parameterType="map"
+		resultType="map">
+		select u.fileName from
+		(select * from boardNoticeInfo order by boardNo)n left join uploadFromNoticeb
+		u
+		on n.boardNo = u.boardNo
+		where n.boardNo = #{boardNo} and u.fileNo =
+		#{fileNo};
+	</select>
+
+	<select id="selectFileList" parameterType="int" resultType="map">
+		select u.* from
+		(select * from boardNoticeInfo order by boardNo)n left
+		join uploadFromNoticeB u
+		on n.boardNo = u.boardNo
+		where n.boardNo =
+		#{boardNo}
+	</select>
+
+	<update id="updateNotice" parameterType="map">
+		update noticeBoard
+		set
+		title = #{TITLE},
+		writeDate = current_timestamp,
+		content = #{CONTENT}
+		where boardNo = #{boardNo}
+	</update>
+
+	<update id="readNotice" parameterType="map">
+		update noticeBoard
+		set
+		title = #{title},
+		viewCount = #{viewCount},
+		content = #{content}
+		where
+		boardNo = #{boardNo}
+	</update>
+
+	<update id="deleteNotice" parameterType="map">
+		update noticeBoard set
+		status=0 where boardNo = #{boardNo}
+	</update>
+
+	<select id="selectMaxNoticeBoardNo" resultType="int">
+		select boardNo
+		from noticeBoard order by boardNo desc limit 1;
+	</select>
+
+	<!--////////////////////////////////// 이벤트 mapper ////////////////////////////////////////////// -->
+
+	<select id="getAllEvent" resultType="map">
+		select n.*,e.* from
+		(select boardNo,
+		type,
+		status,
+		writer,
+		title,
+		viewCount,
+		date_format(writedate,"%Y-%m-%d %h:%i") as writeDate,
+		uploadFile,
+		content
+		from eventBoard)n
+		left join emp e on n.writer = e.empno
+		where status = 1 and type = 2
+		order by boardNo desc;
+	</select>
+
+	<insert id="insertEvent" parameterType="map">
+		insert into
+		eventBoard(type,status,writer,title,writeDate,viewCount,uploadFile,content)
+		values
+		(#{TYPE},1,#{WRITER},#{TITLE},current_timestamp,0,#{UPLOADFILE},#{CONTENT});
+	</insert>
+
+	<insert id="insertAttachEvent" parameterType="map">
+		insert into
+		uploadFromEventB
+		(fileName,boardNo,fileSize)
+		values(#{FILENAME},#{BOARDNO},#{FILESIZE})
+	</insert>
+
+	<select id="totalEventBoardCount" parameterType="map"
+		resultType="int">
+
+		select count(*) from boardEventInfo
+		where 1=0
+		<if test="TITLE != null"> or title like concat('%',#{TITLE},'%')</if>
+		<if test="EMPNAME != null"> or empName like concat('%',#{EMPNAME},'%')</if>
+		<if test="CONTENT != null"> or content like concat('%',#{CONTENT},'%')</if>
+		<if test="type == 0 "> or 1=1</if>
+		and status = 1 and type = 2
+
+	</select>
+
+	<select id="searchEvent" parameterType="map" resultType="map">
+
+		select b1.* from (
+		select b.*,count(c.cmtNo) as cCount, @rownum:=@rownum+1 as
+		rnum,date_format(b.writeDate,"%Y-%m-%d %h:%i") as writeDate1
+		from boardEventInfo b left join commentFromEventB c on b.boardNo =
+		c.boardNo, (select @rownum:=0)r
+		where 1=0
+		<if test="TITLE != null"> or title like concat('%',#{TITLE},'%')</if>
+		<if test="EMPNAME != null"> or empName like concat('%',#{EMPNAME},'%')</if>
+		<if test="CONTENT != null"> or content like concat('%',#{CONTENT},'%')</if>
+		<if test="type == 0 "> or 1=1</if>
+		and status = 1 and type = 2
+		group by
+		b.boardNo,b.empName,b.status,b.writer,b.title,b.writeDate,b.viewCount,b.uploadFile
+		order by boardNo desc) b1
+		where rnum limit #{firstRow},8
+
+	</select>
+
+	<select id="searchEvent1" parameterType="map" resultType="map">
+
+		select b1.* from (
+		select b.*,count(c.cmtNo) as cCount, @rownum:=@rownum+1 as
+		rnum,date_format(b.writeDate,"%Y-%m-%d %h:%i") as writeDate1
+		from boardEventInfo b left join commentFromEventB c on b.boardNo =
+		c.boardNo, (select @rownum:=0)r
+		where status = 1 and type = 1
+		group by
+		b.boardNo,b.empName,b.status,b.writer,b.title,b.writeDate,b.viewCount,b.uploadFile
+		order by boardNo desc) b1
+		where rnum limit 2
+
+	</select>
+
+	<select id="getPreviousEvent" parameterType="int"
+		resultType="map">
+		select boardNo,title from eventBoard where boardNo <![CDATA[ < ]]>
+		#{boardNo} order by boardNo desc limit 1;
+	</select>
+
+	<select id="getNextEvent" parameterType="int" resultType="map">
+		select * from eventBoard where boardNo <![CDATA[ > ]]>
+		#{boardNo} order by boardNo limit 1;
+	</select>
+
+	<select id="selectOneEvent" parameterType="int" resultType="map">
+		select *,date_format(writeDate,"%Y-%m-%d %h:%i") as writeDate1
+		from boardEventInfo
+		where boardNo = #{boardNo}
+	</select>
+
+	<select id="selectOneEvent1" parameterType="map"
+		resultType="map">
+		select u.fileName from
+		(select * from boardEventInfo order by boardNo)n left join uploadFromEventB u
+		on n.boardNo = u.boardNo
+		where n.boardNo = #{boardNo} and u.fileNo = #{fileNo};
+	</select>
+
+	<select id="selectFileListEvent" parameterType="int"
+		resultType="map">
+		select u.* from
+		(select * from boardEventInfo order by boardNo)n left join uploadFromEventB u
+		on n.boardNo = u.boardNo
+		where n.boardNo = #{boardNo}
+	</select>
+
+	<update id="updateEvent" parameterType="map">
+		update eventBoard
+		set
+		title = #{TITLE},
+		writeDate = current_timestamp,
+		content = #{CONTENT}
+		where boardNo = #{boardNo}
+	</update>
+
+	<update id="readEvent" parameterType="map">
+		update eventBoard
+		set
+		title =
+		#{title},
+		viewCount = #{viewCount},
+		content = #{content}
+		where boardNo =
+		#{boardNo}
+	</update>
+
+	<update id="deleteEvent" parameterType="map">
+		update eventBoard set
+		status=0 where boardNo = #{boardNo}
+	</update>
+
+	<select id="selectMaxEventBoardNo" resultType="int">
+		select boardNo
+		from eventBoard order by boardNo desc limit 1;
+	</select>
+
+	<!--////////////////////////////////// IT부서 게시판 mapper ////////////////////////////////////////////// -->
+
+	<select id="getAllIT" resultType="map">
+		select n.*,e.* from
+		(select *, date_format(writeDate,"%Y-%m-%d") as writeDate1
+		from itDeptBoard)n
+		left join emp e on n.writer = e.empNo
+		where status = 1 and type = 2
+		order by boardNo desc;
+	</select>
+
+	<insert id="insertIT" parameterType="map">
+		insert into
+		itDeptBoard(type,status,writer,title,writeDate,viewCount,uploadFile,content)
+		values
+		(#{TYPE},1,#{WRITER},#{TITLE},current_timestamp,0,#{UPLOADFILE},#{CONTENT});
+	</insert>
+
+	<insert id="insertAttachIT" parameterType="map">
+		insert into
+		uploadFromDeptItB
+		(fileName,boardNo,fileSize)
+		values(#{FILENAME},#{BOARDNO},#{FILESIZE})
+	</insert>
+
+	<select id="totalITBoardCount" parameterType="map"
+		resultType="int">
+		select count(*) from boardDeptItInfo
+		where 1=0
+		<if test="TITLE != null">
+			or title like concat('%',#{TITLE},'%')
+		</if>
+		<if test="EMPNAME != null">
+			or empName like concat('%',#{EMPNAME},'%')
+		</if>
+		<if test="CONTENT != null">
+			or content like concat('%',#{CONTENT},'%')
+		</if>
+		<if test="type == 0 ">
+			or 1=1
+		</if>
+		and status = 1 and type = 2
+	</select>
+
+	<select id="searchIT" parameterType="map" resultType="map">
+
+		select b1.* from (
+		select b.*,count(c.cmtNo) as cCount, @rownum:=@rownum+1 as
+		rnum,date_format(b.writeDate,"%Y-%m-%d %h:%i") as writeDate1
+		from boardDeptItInfo b left join commentFromDeptItB c on b.boardNo =
+		c.boardNo,(select @rownum:=0)r
+		where 1=0
+		<if test="TITLE != null"> or title like concat('%',#{TITLE},'%')</if>
+		<if test="EMPNAME != null"> or empName like concat('%',#{EMPNAME},'%')</if>
+		<if test="CONTENT != null"> or content like concat('%',#{CONTENT},'%')</if>
+		<if test="type == 0 "> or 1=1</if>
+		and status = 1 and type = 2
+		group by
+		b.boardNo,b.empName,b.status,b.writer,b.title,b.writeDate,b.viewCount,b.uploadFile
+		order by boardNo desc) b1
+		where rnum limit #{firstRow},8;
+
+	</select>
+
+	<select id="searchIT1" parameterType="map" resultType="map">
+
+		select b1.* from (
+		select b.*,count(c.cmtNo) as cCount, @rownum:=@rownum+1 as
+		rnum,date_format(b.writeDate,"%Y-%m-%d %h:%i") as writeDate1
+		from boardDeptItInfo b left join commentFromDeptItB c on b.boardNo =
+		c.boardNo, (select @rownum:=0)r
+		where status = 1 and type = 1
+		group by
+		b.boardNo,b.empName,b.status,b.writer,b.title,b.writeDate,b.viewCount,b.uploadFile
+		order by boardNo desc) b1
+		where rnum limit 2
+
+	</select>
+
+	<select id="getPreviousIT" parameterType="int" resultType="map">
+		select boardNo,title from itDeptBoard where boardNo <![CDATA[ < ]]>
+		#{boardNo} order by boardNo desc limit 1;
+	</select>
+
+	<select id="getNextIT" parameterType="int" resultType="map">
+		select * from itDeptBoard where boardNo <![CDATA[ > ]]>
+		#{boardNo} order by boardNo limit 1;
+	</select>
+
+	<select id="selectOneIT" parameterType="int" resultType="map">
+		select * from boardDeptItInfo
+		where boardNo = #{boardNo}
+	</select>
+
+	<select id="selectOneIT1" parameterType="map" resultType="map">
+		select u.fileName from
+		(select * from boardDeptItInfo order by boardNo)n left join uploadFromDeptItB
+		u
+		on n.boardNo = u.boardNo
+		where n.boardNo = #{boardNo} and u.fileNo = #{fileNo};
+	</select>
+
+	<select id="selectFileListIT" parameterType="int"
+		resultType="map">
+		select u.* from
+		(select * from boardDeptItInfo order by boardNo)n left join uploadFromDeptItB
+		u
+		on n.boardNo = u.boardNo
+		where n.boardNo = #{boardNo}
+	</select>
+
+	<update id="updateIT" parameterType="map">
+		update itDeptBoard
+		set
+		title =
+		#{TITLE},
+		writeDate = current_timestamp,
+		content = #{CONTENT}
+		where
+		boardNo = #{boardNo}
+	</update>
+
+	<update id="readIT" parameterType="map">
+		update itDeptBoard
+		set
+		title =
+		#{title},
+		viewCount = #{viewCount},
+		content = #{content}
+		where boardNo =
+		#{boardNo}
+	</update>
+
+	<update id="deleteIT" parameterType="map">
+		update itDeptBoard set
+		status=0 where boardNo = #{boardNo}
+	</update>
+
+
+	<select id="selectMaxITBoardNo" resultType="int">
+		select boardNo from
+		itDeptBoard order by boardNo desc limit 1;
+	</select>
+
+	<!--////////////////////////////////// 경영기획부서 게시판 mapper ////////////////////////////////////////////// -->
+	<select id="getAllBP" resultType="map">
+		select n.*,e.* from
+		(select *, date_format(writeDate,"%Y-%m-%d") as writeDate1
+		from bpDeptBoard)n
+		left join emp e on n.writer = e.empno
+		where status = 1 and type = 2
+		order by boardNo desc;
+	</select>
+
+	<insert id="insertBP" parameterType="map">
+		insert into
+		bpDeptBoard(type,status,writer,title,writeDate,viewCount,uploadFile,content)
+		values
+		(#{TYPE},1,#{WRITER},#{TITLE},current_timestamp,0,#{UPLOADFILE},#{CONTENT});
+	</insert>
+
+	<insert id="insertAttachBP" parameterType="map">
+		insert into
+		uploadFromDeptBpB
+		(fileName,boardNo,fileSize)
+		values(#{FILENAME},#{BOARDNO},#{FILESIZE})
+	</insert>
+
+	<select id="totalBPBoardCount" parameterType="map"
+		resultType="int">
+		select count(*) from boardDeptBpInfo
+		where 1=0
+		<if test="TITLE != null">
+			or title like concat('%',#{TITLE},'%')
+		</if>
+		<if test="EMPNAME != null">
+			or empName like concat('%',#{EMPNAME},'%')
+		</if>
+		<if test="CONTENT != null">
+			or content like concat('%',#{CONTENT},'%')
+		</if>
+		<if test="type == 0 ">
+			or 1=1
+		</if>
+		and status = 1 and type = 2
+	</select>
+
+	<select id="searchBP" parameterType="map" resultType="map">
+
+		select b1.* from (
+		select b.*,count(c.cmtNo) as cCount, @rownum:=@rownum+1 as
+		rnum,date_format(b.writeDate,"%Y-%m-%d %h:%i") as writeDate1
+		from boardDeptBpInfo b left join commentFromDeptBpB c on b.boardNo =
+		c.boardNo,(select @rownum:=0)r
+		where 1=0
+		<if test="TITLE != null"> or title like concat('%',#{TITLE},'%')</if>
+		<if test="EMPNAME != null"> or empName like concat('%',#{EMPNAME},'%')</if>
+		<if test="CONTENT != null"> or content like concat('%',#{CONTENT},'%')</if>
+		<if test="type == 0 "> or 1=1</if>
+		and status = 1 and type = 2
+		group by
+		b.boardNo,b.empName,b.status,b.writer,b.title,b.writeDate,b.viewCount,b.uploadFile
+		order by type asc, boardNo desc) b1
+		where rnum limit #{firstRow},8;
+
+	</select>
+
+	<select id="searchBP1" parameterType="map" resultType="map">
+
+		select b1.* from (
+		select b.*,count(c.cmtNo) as cCount, @rownum:=@rownum+1 as
+		rnum,date_format(b.writeDate,"%Y-%m-%d %h:%i") as writeDate1
+		from boardDeptBpInfo b left join commentFromDeptBpB c on b.boardNo =
+		c.boardNo, (select @rownum:=0)r
+		where status = 1 and type = 1
+		group by
+		b.boardNo,b.empName,b.status,b.writer,b.title,b.writeDate,b.viewCount,b.uploadFile
+		order by boardNo desc) b1
+		where rnum limit 2
+
+	</select>
+
+	<select id="getPreviousBP" parameterType="int" resultType="map">
+		select boardNo,title from bpDeptBoard where boardNo <![CDATA[ < ]]>
+		#{boardNo} order by boardNo desc limit 1;
+	</select>
+
+	<select id="getNextBP" parameterType="int" resultType="map">
+		select * from bpDeptBoard where boardNo <![CDATA[ > ]]>
+		#{boardNo} order by boardNo limit 1;
+	</select>
+
+	<select id="selectOneBP" parameterType="int" resultType="map">
+		select * from boardDeptBpInfo
+		where boardNo = #{boardNo}
+	</select>
+
+	<select id="selectOneBP1" parameterType="map" resultType="map">
+		select u.fileName from
+		(select * from boardDeptBpInfo order by boardNo)n left join uploadFromDeptBpB
+		u
+		on n.boardNo = u.boardNo
+		where n.boardNo = #{boardNo} and u.fileNo = #{fileNo};
+	</select>
+
+	<select id="selectFileListBP" parameterType="int"
+		resultType="map">
+		select u.* from
+		(select * from boarddeptbpInfo order by boardNo)n left join uploadFromDeptBpB
+		u
+		on n.boardNo = u.boardNo
+		where n.boardNo = #{boardNo}
+	</select>
+
+	<update id="updateBP" parameterType="map">
+		update bpDeptBoard
+		set
+		title =
+		#{TITLE},
+		writeDate = current_timestamp,
+		content = #{CONTENT}
+		where
+		boardNo = #{boardNo}
+	</update>
+
+	<update id="readBP" parameterType="map">
+		update bpDeptBoard
+		set
+		title =
+		#{title},
+		viewCount = #{viewCount},
+		content = #{content}
+		where boardNo =
+		#{boardNo}
+	</update>
+
+	<update id="deleteBP" parameterType="map">
+		update bpDeptBoard set
+		status=0 where boardNo = #{boardNo}
+	</update>
+
+
+	<select id="selectMaxBPBoardNo" resultType="int">
+		select boardNo from
+		bpDeptBoard order by boardNo desc limit 1;
+	</select>
+
+	<!--////////////////////////////////// 재무부서 게시판 mapper ////////////////////////////////////////////// -->
+	<select id="getAllMin" resultType="map">
+		select n.*,e.* from
+		(select *, date_format(writeDate,"%Y-%m-%d") as writeDate1
+		from minDeptBoard)n
+		left join emp e on n.writer = e.empno
+		where status = 1 and type = 2
+		order by boardNo desc;
+	</select>
+
+	<insert id="insertMin" parameterType="map">
+		insert into
+		minDeptBoard(type,status,writer,title,writeDate,viewCount,uploadFile,content)
+		values
+		(#{TYPE},1,#{WRITER},#{TITLE},current_timestamp,0,#{UPLOADFILE},#{CONTENT});
+	</insert>
+
+	<insert id="insertAttachMin" parameterType="map">
+		insert into
+		uploadFromDeptMinB
+		(fileName,boardNo,fileSize)
+		values(#{FILENAME},#{BOARDNO},#{FILESIZE})
+	</insert>
+
+	<select id="totalMinBoardCount" parameterType="map"
+		resultType="int">
+		select count(*) from boardDeptMinInfo
+		where 1=0
+		<if test="TITLE != null">
+			or title like concat('%',#{TITLE},'%')
+		</if>
+		<if test="EMPNAME != null">
+			or empName like concat('%',#{EMPNAME},'%')
+		</if>
+		<if test="CONTENT != null">
+			or content like concat('%',#{CONTENT},'%')
+		</if>
+		<if test="type == 0 ">
+			or 1=1
+		</if>
+		and status = 1 and type = 2
+	</select>
+
+	<select id="searchMin" parameterType="map" resultType="map">
+
+		select b1.* from (
+		select b.*,count(c.cmtNo) as cCount, @rownum:=@rownum+1 as
+		rnum,date_format(b.writeDate,"%Y-%m-%d %h:%i") as writeDate1
+		from boardDeptMinInfo b left join commentFromDeptMinB c on b.boardNo =
+		c.boardNo,(select @rownum:=0)r
+		where 1=0
+		<if test="TITLE != null"> or title like concat('%',#{TITLE},'%')</if>
+		<if test="EMPNAME != null"> or empName like concat('%',#{EMPNAME},'%')</if>
+		<if test="CONTENT != null"> or content like concat('%',#{CONTENT},'%')</if>
+		<if test="type == 0 "> or 1=1</if>
+		and status = 1 and type = 2
+		group by
+		b.boardNo,b.empName,b.status,b.writer,b.title,b.writeDate,b.viewCount,b.uploadFile
+		order by type asc, boardNo desc) b1
+		where rnum limit #{firstRow},8;
+
+	</select>
+
+	<select id="searchMin1" parameterType="map" resultType="map">
+
+		select b1.* from (
+		select b.*,count(c.cmtNo) as cCount, @rownum:=@rownum+1 as
+		rnum,date_format(b.writeDate,"%Y-%m-%d %h:%i") as writeDate1
+		from boardDeptMinInfo b left join commentFromDeptMinB c on b.boardNo =
+		c.boardNo, (select @rownum:=0)r
+		where status = 1 and type = 1
+		group by
+		b.boardNo,b.empName,b.status,b.writer,b.title,b.writeDate,b.viewCount,b.uploadFile
+		order by boardNo desc) b1
+		where rnum limit 2
+
+	</select>
+
+	<select id="getPreviousMin" parameterType="int" resultType="map">
+		select boardNo,title from minDeptBoard where boardNo <![CDATA[ < ]]>
+		#{boardNo} order by boardNo desc limit 1;
+	</select>
+
+	<select id="getNextMin" parameterType="int" resultType="map">
+		select * from minDeptBoard where boardNo <![CDATA[ > ]]>
+		#{boardNo} order by boardNo limit 1;
+	</select>
+
+	<select id="selectOneMin" parameterType="int" resultType="map">
+		select * from boardDeptMinInfo
+		where boardNo = #{boardNo}
+	</select>
+
+	<select id="selectOneMin1" parameterType="map" resultType="map">
+		select u.fileName from
+		(select * from boardDeptMinInfo order by boardNo)n left join
+		uploadFromDeptMinB u
+		on n.boardNo = u.boardNo
+		where n.boardNo = #{boardNo} and u.fileNo = #{fileNo};
+	</select>
+
+	<select id="selectFileListMin" parameterType="int"
+		resultType="map">
+		select u.* from
+		(select * from boardDeptMinInfo order by boardNo)n left join
+		uploadFromDeptMinB u
+		on n.boardNo = u.boardNo
+		where n.boardNo = #{boardNo}
+	</select>
+
+	<update id="updateMin" parameterType="map">
+		update minDeptBoard
+		set
+		title = #{TITLE},
+		writeDate = current_timestamp,
+		content = #{CONTENT}
+		where boardNo = #{boardNo}
+	</update>
+
+	<update id="readMin" parameterType="map">
+		update minDeptBoard
+		set
+		title =
+		#{title},
+		viewCount = #{viewCount},
+		content = #{content}
+		where boardNo =
+		#{boardNo}
+	</update>
+
+	<update id="deleteMin" parameterType="map">
+		update minDeptBoard set
+		status=0 where boardNo = #{boardNo}
+	</update>
+
+
+	<select id="selectMaxMinBoardNo" resultType="int">
+		select boardNo from
+		minDeptBoard order by boardNo desc limit 1;
+	</select>
+
+	<!--////////////////////////////////// 영업부서 mapper ////////////////////////////////////////////// -->
+
+	<select id="getAllSales" resultType="map">
+		select n.*,e.* from
+		(select *, date_format(writeDate,"%Y-%m-%d") as writeDate1
+		from salesDeptBoard)n
+		left join emp e on n.writer = e.empno
+		where status = 1 and type = 2
+		order by boardNo desc;
+	</select>
+
+	<insert id="insertSales" parameterType="map">
+		insert into
+		salesDeptBoard(type,status,writer,title,writeDate,viewCount,uploadFile,content)
+		values
+		(#{TYPE},1,#{WRITER},#{TITLE},current_timestamp,0,#{UPLOADFILE},#{CONTENT});
+	</insert>
+
+	<insert id="insertAttachSales" parameterType="map">
+		insert into
+		uploadFromDeptSalesB
+		(fileName,boardNo,fileSize)
+		values(#{FILENAME},#{BOARDNO},#{FILESIZE})
+	</insert>
+
+	<select id="totalSalesBoardCount" parameterType="map"
+		resultType="int">
+		select count(*) from boardDeptSalesInfo
+		where 1=0
+		<if test="TITLE != null">
+			or title like concat('%',#{TITLE},'%')
+		</if>
+		<if test="EMPNAME != null">
+			or empName like concat('%',#{EMPNAME},'%')
+		</if>
+		<if test="CONTENT != null">
+			or content like concat('%',#{CONTENT},'%')
+		</if>
+		<if test="type == 0 ">
+			or 1=1
+		</if>
+		and status = 1 and status = 2;
+	</select>
+
+	<select id="searchSales" parameterType="map" resultType="map">
+
+		select b1.* from (
+		select b.*,count(c.cmtNo) as cCount, @rownum:=@rownum+1 as
+		rnum,date_format(b.writeDate,"%Y-%m-%d %h:%i") as writeDate1
+		from boardDeptSalesInfo b left join commentFromDeptSalesB c on b.boardNo =
+		c.boardNo,(select @rownum:=0)r
+		where 1=0
+		<if test="TITLE != null"> or title like concat('%',#{TITLE},'%')</if>
+		<if test="EMPNAME != null"> or empName like concat('%',#{EMPNAME},'%')</if>
+		<if test="CONTENT != null"> or content like concat('%',#{CONTENT},'%')</if>
+		<if test="type == 0 "> or 1=1</if>
+		and status = 1 and status = 2
+		group by
+		b.boardNo,b.empName,b.status,b.writer,b.title,b.writeDate,b.viewCount,b.uploadFile
+		order by type asc, boardNo desc) b1
+		where rnum limit #{firstRow},8;
+
+	</select>
+
+	<select id="searchSales1" parameterType="map" resultType="map">
+
+		select b1.* from (
+		select b.*,count(c.cmtNo) as cCount, @rownum:=@rownum+1 as
+		rnum,date_format(b.writeDate,"%Y-%m-%d %h:%i") as writeDate1
+		from boardDeptSalesInfo b left join commentFromDeptSalesB c on b.boardNo =
+		c.boardNo,(select @rownum:=0)r
+		where status = 1 and status = 1
+		group by
+		b.boardNo,b.empName,b.status,b.writer,b.title,b.writeDate,b.viewCount,b.uploadFile
+		order by type asc, boardNo desc) b1
+		where rnum limit #{firstRow},10;
+
+	</select>
+
+	<select id="getPreviousSales" parameterType="int"
+		resultType="map">
+		select boardNo,title from salesDeptBoard where boardNo <![CDATA[ < ]]>
+		#{boardNo} order by boardNo desc limit 1;
+	</select>
+
+	<select id="getNextSales" parameterType="int" resultType="map">
+		select * from salesDeptBoard where boardNo <![CDATA[ > ]]>
+		#{boardNo} order by boardNo limit 1;
+	</select>
+
+	<select id="selectOneSales" parameterType="int" resultType="map">
+		select * from boardDeptSalesInfo
+		where boardNo = #{boardNo}
+	</select>
+
+	<select id="selectOneSales1" parameterType="map"
+		resultType="map">
+		select u.fileName from
+		(select * from boardDeptSalesInfo order by boardNo)n left join
+		uploadFromDeptSalesB u
+		on n.boardNo = u.boardNo
+		where n.boardNo = #{boardNo} and u.fileNo = #{fileNo};
+	</select>
+
+	<select id="selectFileListSales" parameterType="int"
+		resultType="map">
+		select u.* from
+		(select * from boardDeptSalesInfo order by boardNo)n left join
+		uploadFromDeptSalesB u
+		on n.boardNo = u.boardNo
+		where n.boardNo = #{boardNo}
+	</select>
+
+	<update id="updateSales" parameterType="map">
+		update salesDeptBoard
+		set
+		title = #{TITLE},
+		writeDate = current_timestamp,
+		content = #{CONTENT}
+		where boardNo = #{boardNo}
+	</update>
+
+	<update id="readSales" parameterType="map">
+		update salesDeptBoard
+		set
+		title = #{title},
+		viewCount = #{viewCount},
+		content = #{content}
+		where
+		boardNo = #{boardNo}
+	</update>
+
+	<update id="deleteSales" parameterType="map">
+		update salesDeptBoard set
+		status=0 where boardNo = #{boardNo}
+	</update>
+
+	<select id="selectMaxSalesBoardNo" resultType="int">
+		select boardNo
+		from salesDeptBoard order by boardNo desc limit 1;
+	</select>
+
+	<!--////////////////////////////////// 진행중 프로젝트 mapper ////////////////////////////////////////////// -->
+	
+	<select id="getAllProjectOngoing" resultType="map">
+		select n.*,e.* from
+		(select *, date_format(writeDate,"%Y-%m-%d") as writeDate1
+		from projectBoard)n
+		left join emp e on n.writer = e.empno
+		where status = 1 and rop != 100
+		order by boardNo desc;
+	</select>
+
+	<insert id="insertParticipant" parameterType="map">
+		insert into
+		projectParticipant(boardNo, participant)
+		values (#{BOARDNO},
+		#{PARTICIPANT});
+	</insert>
+
+	<insert id="insertTask" parameterType="map">
+		insert into
+		projectTask(taskName,taskContent,tStartDate,tEndDate,status,boardNo)
+		values (#{TASKNAME},#{TASKCONTENT},#{TSTARTDATE},#{TENDDATE},1,#{boardNo});
+	</insert>
+
+	<insert id="insertProjectOngoing" parameterType="map">
+		insert into
+		projectBoard(status,writer,writeDate,viewCount,uploadFile,content,projectName,pStartDate,pEndDate,inCharge)
+		values
+		(1,#{WRITER},current_timestamp,0,#{UPLOADFILE},#{CONTENT},#{PROJECTNAME},#{PSTARTDATE},#{PENDDATE},#{INCHARGE});
+	</insert>
+
+	<insert id="insertAttachProjectOngoing" parameterType="map">
+		insert
+		into uploadFromProjectB
+		(fileName,boardNo,fileSize)
+		values(#{FILENAME},#{BOARDNO},#{FILESIZE})
+	</insert>
+
+	<insert id="insertAttachProjectTask" parameterType="map">
+		insert into
+		uploadFromProjectTask
+		(fileName,taskNo,fileSize)
+		values(#{FILENAME},#{TASKNO},#{FILESIZE})
+	</insert>
+
+	<select id="totalProjectOngoingBoardCount" parameterType="map"
+		resultType="int">
+		select count(*) from boardProjectInfo
+		where 1=0
+		<if test="PROJECTNAME != null">
+			or projectName like concat('%',#{PROJECTNAME},'%')
+		</if>
+		<if test="EMPNAME != null">
+			or empName like concat('%',#{EMPNAME},'%')
+		</if>
+		<if test="CONTENT != null">
+			or content like concat('%',#{CONTENT},'%')
+		</if>
+		<if test="type == 0 ">
+			or 1=1
+		</if>
+		and rop != 100
+	</select>
+
+	<select id="searchProjectOngoing" parameterType="map"
+		resultType="map">
+
+		select b1.* from (
+		select b.*, @rownum:=@rownum+1 as rnum,date_format(b.writeDate,"%Y-%m-%d")
+		as writeDate1,date_format(b.pStartDate, "%Y-%m-%d") as pStartDate1
+		,date_format(b.pEndDate, "%Y-%m-%d") as pEndDate1
+		from boardProjectInfo b,(select @rownum:=0)r
+		where 1=0
+		<if test="PROJECTNAME != null"> or projectName like concat('%',#{PROJECTNAME},'%')</if>
+		<if test="EMPNAME != null"> or empName like concat('%',#{EMPNAME},'%')</if>
+		<if test="CONTENT != null"> or content like concat('%',#{CONTENT},'%')</if>
+		<if test="type == 0 "> or 1=1</if>
+		and status = 1 and rop != 100
+		group by
+		b.boardNo,b.empName,b.status,b.writer,b.projectname,b.pstartdate,b.penddate,b.incharge,b.writeDate,b.viewCount,b.uploadFile,b.rop
+		order by boardNo desc) b1
+		where rnum limit #{firstRow},10;
+
+	</select>
+
+	<select id="totalProjectOngoingTaskCount" parameterType="map"
+		resultType="int">
+		select count(*) from projectTask
+		where status = 1 and boardNo = #{boardNo};
+	</select>
+
+	<select id="searchProjectOngoingTask" parameterType="map"
+		resultType="map">
+
+		select b1.* from (
+		select b.*, @rownum:=@rownum+1 as rnum,date_format(b.tStartDate, "%Y-%m-%d")
+		as tStartDate1,date_format(b.tEndDate, "%Y-%m-%d") as tEndDate1
+		from projectTask b ,(select @rownum:=0)r
+		where boardNo = #{boardNo}
+		group by
+		b.taskNo,b.taskName,b.taskContent,b.tStartDate,b.tEndDate,b.status,b.rop
+		order by taskNo desc) b1
+		where status = 1 and rnum limit #{firstRow},5;
+
+	</select>
+
+	<select id="getPreviousProjectOngoing" parameterType="int"
+		resultType="map">
+		select * from projectBoard where boardNo <![CDATA[ < ]]>
+		#{boardNo} order by boardNo desc limit 1;
+	</select>
+
+	<select id="getNextProjectOngoing" parameterType="int"
+		resultType="map">
+		select * from projectBoard where boardNo <![CDATA[ > ]]>
+		#{boardNo} order by boardNo limit 1;
+	</select>
+
+	<select id="selectOneProjectOngoing" parameterType="int"
+		resultType="map">
+		select n.* from
+		(select *,date_format(writeDate,"%Y-%m-%d") as writeDate1
+		,date_format(pStartDate,"%Y-%m-%d") as pStartDate1
+		,date_format(pEndDate,"%Y-%m-%d") as pEndDate1
+		from boardProjectInfo order by boardNo)n
+		where n.boardNo = #{boardNo};
+	</select>
+
+	<select id="selectOneProjectOngoing1" parameterType="map"
+		resultType="map">
+		select n.*,u.fileName from
+		(select *,date_format(writeDate,"%Y-%m-%d") as
+		writeDate1,date_format(pStartDate,"%Y-%m-%d") as pStartDate1
+		,date_format(pEndDate,"%Y-%m-%d")
+		as pEndDate1 from boardProjectInfo order by boardNo)n left join
+		uploadFromProjectB u
+		on n.boardNo = u.boardNo
+		where n.boardNo = #{boardNo} and u.fileNo = #{fileNo};
+	</select>
+
+	<select id="selectFileListProjectOngoing" parameterType="int"
+		resultType="map">
+		select u.* from
+		(select * from boardProjectInfo order by boardNo)n left join
+		uploadFromProjectB u
+		on n.boardNo = u.boardNo
+		where n.boardNo = #{boardNo}
+	</select>
+
+	<select id="selectOneProjectOngoingTask" parameterType="int"
+		resultType="map">
+		select *,date_format(tStartDate,"%Y-%m-%d %h:%i") as
+		tStartDate1
+		,date_format(tEndDate
+		,"%Y-%m-%d %h:%i") as tEndDate1 from
+		projectTask
+		where taskNo = #{taskNo};
+	</select>
+
+	<select id="selectOneProjectOngoingTask1" parameterType="map"
+		resultType="map">
+		select n.*, u.* from
+		(select *
+		from projectTask order by boardNo)n left join uploadFromProjectTask
+		u
+		on n.taskNo = u.taskNo
+		where n.taskNo = #{taskNo} and u.fileNo =
+		#{fileNo};
+	</select>
+
+	<select id="selectFileListProjectOngoingTask"
+		parameterType="int" resultType="map">
+		select u.* from
+		(select * from projectTask order by boardNo)n left join uploadFromProjectTask
+		u
+		on n.taskNo = u.taskNo
+		where n.taskNo = #{taskNo}
+	</select>
+
+
+	<update id="updateProjectOngoing" parameterType="map">
+		update
+		projectBoard
+		set
+		projectName = #{PROJECTNAME},
+		uploadFile = #{UPLOADFILE},
+		writeDate = current_timestamp,
+		content = #{CONTENT},
+		pStartDate = #{PSTARTDATE},
+		pEndDate = #{PENDDATE},
+		rop = #{ROP}
+		where boardNo = #{boardNo}
+
+	</update>
+	
+	<update id="updateProjectOngoingTask" parameterType="map">
+		update
+		projectTask
+		set
+		taskName = #{TASKNAME},
+		uploadFile = #{UPLOADFILE},
+		taskContent = #{TASKCONTENT},
+		tStartDate = #{TSTARTDATE},
+		tEndDate = #{TENDDATE}
+		where taskNo = #{taskNo}
+	</update>
+
+	<update id="updateExistOfFile" parameterType="map">
+		update projectTask
+		set
+		uploadFile = #{UPLOADFILE}
+		where taskNo = #{TASKNO}
+	</update>
+
+	<update id="readProjectOngoing" parameterType="map">
+		update
+		projectBoard
+		set
+		projectName = #{projectName},
+		viewCount = #{viewCount},
+		content = #{content}
+		where boardNo = #{boardNo}
+	</update>
+
+	<update id="deleteProjectOngoing" parameterType="map">
+		update
+		projectBoard set status=0 where boardNo = #{boardNo}
+	</update>
+
+	<update id="deleteProjectOngoingOfTask" parameterType="map">
+		update
+		projectTask set status=0 where taskNo = #{taskNo}
+	</update>
+
+	<select id="selectMaxProjectOngoingBoardNo" resultType="int">
+		select
+		boardNo from projectBoard order by boardNo desc limit 1;
+	</select>
+
+	<select id="selectMaxProjectOngoingTaskNo" resultType="int">
+		select
+		taskNo from projectTask order by taskNo desc limit 1;
+	</select>
+
+	<select id="selectByBoardNoProjectOngoing" parameterType="int"
+		resultType="map">
+		select c.*,e.*
+		from projectParticipant c left join emp e on c.participant = e.empName
+		where boardNo = #{boardNo}
+	</select>
+
+	<select id="selectAttachOfTaskByTaskNo" parameterType="int"
+		resultType="map">
+		select p.*,u.* from projectTask p left join
+		uploadFromProjectTask u on p.taskNo = u.taskNo
+		where p.taskNo =
+		#{taskNo};
+	</select>
+
+	<!--////////////////////////////////// 완료된 프로젝트 mapper ////////////////////////////////////////////// -->
+	
+	<select id="totalProjectFinishedBoardCount" parameterType="map"
+		resultType="int">
+		select count(*) from boardProjectInfo
+		where 1=0
+		<if test="PROJECTNAME != null">
+			or projectName like concat('%',#{PROJECTNAME},'%')
+		</if>
+		<if test="EMPNAME != null">
+			or empName like concat('%',#{EMPNAME},'%')
+		</if>
+		<if test="CONTENT != null">
+			or content like concat('%',#{CONTENT},'%')
+		</if>
+		<if test="type == 0 ">
+			or 1=1
+		</if>
+		and rop = 100
+	</select>
+
+	<select id="searchProjectFinished" parameterType="map"
+		resultType="map">
+
+		select b1.* from (
+		select b.*, @rownum:=@rownum+1 as rnum,date_format(b.writeDate,"%Y-%m-%d")
+		as writeDate1,date_format(b.pStartDate, "%Y-%m-%d") as pStartDate1
+		,date_format(b.pEndDate, "%Y-%m-%d") as pEndDate1
+		from boardProjectInfo b,(select @rownum:=0)r
+		where 1=0
+		<if test="PROJECTNAME != null"> or projectName like concat('%',#{PROJECTNAME},'%')</if>
+		<if test="EMPNAME != null"> or empName like concat('%',#{EMPNAME},'%')</if>
+		<if test="CONTENT != null"> or content like concat('%',#{CONTENT},'%')</if>
+		<if test="type == 0 "> or 1=1</if>
+		and status = 1 and rop = 100
+		group by
+		b.boardNo,b.empName,b.status,b.writer,b.projectname,b.pstartdate,b.penddate,b.incharge,b.writeDate,b.viewCount,b.uploadFile,b.rop
+		order by boardNo desc) b1
+		where rnum limit #{firstRow},10;
+
+	</select>
+
+	<select id="getPreviousProjectFinished" parameterType="int"
+		resultType="map">
+		select * from projectBoard
+		where boardNo <![CDATA[ < ]]>
+		#{boardNo} and rop = 100
+		order by boardNo desc limit 1;
+	</select>
+
+	<select id="getNextProjectFinished" parameterType="int"
+		resultType="map">
+		select * from projectBoard
+		where boardNo <![CDATA[ > ]]>
+		#{boardNo} and rop = 100
+		order by boardNo limit 1;
+	</select>
+
+	<!--////////////////////////////////// 익명게시판 mapper ////////////////////////////////////////////// -->
+	<select id="getAllAnonymity" resultType="map">
+		select boardNo,
+		status,
+		writer,
+		title,
+		date_format(writedate,"%Y-%m-%d") as writeDate,
+		content
+		from anonymityBoard
+		where status = 1 and type = 2
+		order by boardNo desc;
+	</select>
+
+	<insert id="insertAnonymity" parameterType="map">
+		insert into
+		anonymityBoard(type,boardPw,status,writer,title,writeDate,viewCount,uploadFile,content)
+		values
+		(#{TYPE},#{BOARDPW},1,#{WRITER},#{TITLE},current_timestamp,0,#{UPLOADFILE},#{CONTENT});
+	</insert>
+
+	<insert id="insertAttachAnonymity" parameterType="map">
+		insert into
+		uploadFromAnonymityB
+		(fileName,boardNo,fileSize)
+		values(#{FILENAME},#{BOARDNO},#{FILESIZE})
+	</insert>
+
+	<select id="totalAnonymityBoardCount" parameterType="map"
+		resultType="int">
+		select count(*) from anonymityBoard
+		where 1=0
+		<if test="TITLE != null">
+			or title like concat('%',#{TITLE},'%')
+		</if>
+		<if test="WRITER != null">
+			or writer like concat('%',#{WRITER},'%')
+		</if>
+		<if test="CONTENT != null">
+			or content like concat('%',#{CONTENT},'%')
+		</if>
+		<if test="type == 0 ">
+			or 1=1
+		</if>
+		and status = 1 and type = 2
+	</select>
+
+	<select id="searchAnonymity" parameterType="map"
+		resultType="map">
+
+		select b1.* from (
+		select b.*,count(c.cmtNo) as cCount, @rownum:=@rownum+1 as
+		rnum,date_format(b.writeDate,"%Y-%m-%d %h:%i") as writeDate1
+		from anonymityBoard b left join commentFromAnonymityB c on b.boardNo =
+		c.boardNo,(select @rownum:=0)r
+		where 1=0
+		<if test="TITLE != null"> or b.title like concat('%',#{TITLE},'%')</if>
+		<if test="WRITER != null"> or b.writer like concat('%',#{WRITER},'%')</if>
+		<if test="CONTENT != null"> or b.content like concat('%',#{CONTENT},'%')</if>
+		<if test="type == 0 "> or 1=1</if>
+		and status = 1 and type = 2
+		group by
+		b.boardNo,b.status,b.writer,b.title,b.writeDate,b.viewCount,b.uploadFile
+		order by type asc, boardNo desc) b1
+		where rnum limit #{firstRow},8;
+
+	</select>
+
+	<select id="searchAnonymity1" parameterType="map"
+		resultType="map">
+
+		select b1.* from (
+		select b.*,count(c.cmtNo) as cCount, @rownum:=@rownum+1 as
+		rnum,date_format(b.writeDate,"%Y-%m-%d %h:%i") as writeDate1
+		from anonymityBoard b left join commentFromAnonymityB c on b.boardNo =
+		c.boardNo,(select @rownum:=0)r
+		where status = 1 and type = 1
+		group by
+		b.boardNo,b.status,b.writer,b.title,b.writeDate,b.viewCount,b.uploadFile
+		order by type asc, boardNo desc) b1
+		where rnum limit #{firstRow},2;
+
+	</select>
+
+	<update id="deleteAnonymity" parameterType="map">
+		update anonymityBoard
+		set status=0 where boardNo = #{boardNo}
+	</update>
+
+	<update id="readAnonymity" parameterType="map">
+		update anonymityBoard
+		set
+		title = #{title},
+		viewCount = #{viewCount},
+		content = #{content}
+		where boardNo = #{boardNo}
+	</update>
+
+	<update id="updateAnonymity" parameterType="map">
+		update anonymityBoard
+		set
+		title = #{TITLE},
+		writeDate = current_timestamp,
+		content = #{CONTENT}
+		where boardNo = #{boardNo}
+	</update>
+
+	<select id="selectMaxAnonymityBoardNo" resultType="int">
+		select boardNo
+		from anonymityBoard order by boardNo desc limit 1;
+	</select>
+
+	<select id="selectOneAnonymity" parameterType="int"
+		resultType="map">
+		select * from anonymityBoard
+		where boardNo = #{boardNo}
+	</select>
+
+	<select id="selectOneAnonymity1" parameterType="map"
+		resultType="map">
+		select u.fileName from
+		(select * from anonymityBoard order by boardNo)n left join
+		uploadFromAnonymityB u
+		on n.boardNo = u.boardNo
+		where n.boardNo = #{boardNo} and u.fileNo = #{fileNo};
+	</select>
+
+	<select id="selectFileListAnonymity" parameterType="int"
+		resultType="map">
+		select u.* from
+		(select * from anonymityBoard order by boardNo)n left join
+		uploadFromAnonymityB u
+		on n.boardNo = u.boardNo
+		where n.boardNo = #{boardNo}
+	</select>
+
+	<select id="getPreviousAnonymity" parameterType="int"
+		resultType="map">
+		select boardNo,title from anonymityBoard where boardNo <![CDATA[ < ]]>
+		#{boardNo} order by boardNo desc limit 1;
+	</select>
+
+	<select id="getNextAnonymity" parameterType="int"
+		resultType="map">
+		select * from anonymityBoard where boardNo <![CDATA[ > ]]>
+		#{boardNo} order by boardNo limit 1;
+	</select>
+
+</mapper>
+
+

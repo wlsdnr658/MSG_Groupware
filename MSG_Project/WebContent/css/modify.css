@@ -1,0 +1,53 @@
+#time {
+	margin-top: 50px;
+}
+
+#aa {
+	position: relative;
+	padding: 5px;
+	border: 2px solid #013466;
+	background: #fff;
+	color: #003366;
+	vertical-align: middle;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	zoom: 1;
+	white-space: nowrap;
+}
+
+body{
+	background-image: img
+}
+
+
+.modifyBtn{
+	
+	border: 1px solid #333;
+	color: #333;
+	background-color: #fff;
+}
+#modifyBtn{
+	
+	border: 1px solid #333;
+	color: #333;
+	background-color: #fff;
+}
+
+table{
+	width : 100%;
+	border-collapse : collapse;
+	font-size: 12px;
+	line-height: 24px;	
+}
+
+table td,th{
+	border : #d3d3d3 solid 1px;
+	padding: 5px;
+}
+th {
+	background: #f3f4f9 !important;
+}
+#main_lnb img {
+	position: absolute;
+}

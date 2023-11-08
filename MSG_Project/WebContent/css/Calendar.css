@@ -1,0 +1,97 @@
+/* 珥덇린�솕 */
+* {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+/* 	font-family: sans-serif; */
+font-family: 'Nanum Gothic', sans-serif;
+}
+
+li {
+	list-style: none;
+}
+
+a {
+	text-decoration: none;
+	color: #333;
+	font-weight: bold;
+}
+
+a:hover {
+	color: #fb2525;
+}
+
+div {
+	color: #333;
+}
+
+img {
+	border: 0;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 12px; /* 湲�瑗� �겕湲� */
+	line-height: 24px; /* 以� 媛꾧꺽 */
+	text-align: center;
+}
+
+table td, th {
+	border: solid 1px gray; /* 寃쎄퀎�꽑 �깋�긽 �뒪���씪 援듦린 */
+	padding: 5px; /* �븞履� �뿬諛� */
+}
+
+th {
+	background: silver; /* 諛곌꼍�깋 */
+}
+
+#tr1 {
+	font-size: 15px;
+}
+
+
+#menuBox1Ul>.menu >#inside > li{
+	margin-left : 50px;
+	
+	
+}
+
+.menu a {
+	cursor: pointer;
+}
+
+.menu .hide {
+	visibility:  hidden;
+}
+
+
+
+/* 	콘텐츠 */
+#content {
+	width: 1400px;
+    margin-left: 13%;
+    background-color: white;
+}
+
+#content>p>a {
+	font-family: monospace;
+	font-weight: normal;
+	margin-bottom: 10px;
+}
+
+/* 푸터 */
+#main_footer {
+	width: 100%;
+	margin: 0 auto;
+	height: 110px;
+	position: relative;
+	top: 30px;
+	border-top: 1px solid #fb2525;
+}
+
+#main_lnb img {
+	position: absolute;
+}

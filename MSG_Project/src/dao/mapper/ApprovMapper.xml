@@ -1,0 +1,804 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="dao.ApprovalDao">
+
+	<insert id="insertDraft" parameterType="map">
+
+		INSERT INTO
+
+		drafting_approval (approvNo, approvDate, title, content, upFile, etc,
+
+		line_order, status, approv1, approv2, approv3, approv4, docNo, empNo)
+
+		VALUES(#{APNUM}, #{APDATE}, #{TITLE}, #{CONTENT}, #{UFILE}, #{ETC},
+
+		#{APPROV1},1,#{APPROV1}, #{APPROV2}, #{APPROV3}, #{APPROV4}, #{DOCNO},
+
+		#{WRITER})
+
+	</insert>
+
+	<insert id="insertDisburse" parameterType="map">
+
+		INSERT INTO
+
+		disburse_approval (approvNo, approvDate, totalPrice, title, tradeInc,
+
+		detailNote, detailPrice, payType, etc, line_order, status, approv1,
+
+		approv2, approv3, approv4, docNo, empNo)
+
+		VALUES(#{APNUM}, #{APDATE},
+
+		#{MONEY_DETAIL_TOTAL}, #{TITLE}, #{INC}, #{DETAILNOTE},
+
+		#{DETAILPRICE}, #{PAYTYPE}, #{ETC}, #{APPROV1},
+
+		1,#{APPROV1},#{APPROV2},#{APPROV3},#{APPROV4},#{DOCNO},#{WRITER})
+
+	</insert>
+
+	<insert id="insertVacation" parameterType="map">
+
+		INSERT INTO
+
+		vacation_approval (approvNo, approvDate, vacationType, vacStart,
+
+		vacEnd, reason, etc, line_order, status, approv1, approv2, approv3,
+
+		approv4, docNo, empNo)
+
+		VALUES(#{APNUM}, #{APDATE}, #{VACTYPE},
+
+		#{START}, #{END}, #{DETAIL}, #{ETC}, #{APPROV1}, 1, #{APPROV1},
+
+		#{APPROV2}, #{APPROV3}, #{APPROV4}, #{DOCNO}, #{WRITER})
+
+	</insert>
+
+	
+
+	<update id="attachFile" parameterType="map"> <!-- 파일넣기 -->
+
+		UPDATE
+
+		<choose>
+
+			<when test="DOC == 1"> drafting_approval </when>
+
+			<when test="DOC == 2"> disburse_approval </when>
+
+			<when test="DOC == 2"> vacation_approval </when>
+
+		</choose>
+
+		SET upFile = #{FILENAME} WHERE approvNo = #{APPROVNO}
+
+	</update>
+
+ 
+
+	<insert id="insertLine" parameterType="map">
+
+		INSERT INTO approvLine
+
+		(lineNo, dept, fApprov, curApprov)
+
+		values (#{LINENO}, #{DEPT},
+
+		#{FAPPROV},1)
+
+	</insert>
+
+	<update id="updateLine" parameterType="map">
+
+		UPDATE approvLine set
+
+		sApprov = #{SAPPROV}, tApprov = #{TAPPROV}
+
+		WHERE lineNo = #{LINENO}
+
+	</update>
+
+ 
+
+ 
+
+ 
+
+	<select id="getEmpNameByNo" parameterType="string" resultType="map">
+
+		SELECT empNo, empName, deptName, empPos
+
+		FROM empInfo
+
+		WHERE empNo = #{empNo}
+
+	</select>
+
+	<select id="getSysDate" resultType="string">
+
+		SELECT now();
+
+		<!-- SELECT -->
+
+		<!-- date_format(now(),'%Y.%c.%e') -->
+
+	</select>
+
+ 
+
+	<!-- 저장 된 결재선 불러오기 sql 시작 -->
+
+	<select id="approvToLine" parameterType="map" resultType="map">
+
+		select a1.fApprov as a1, a1.sApprov as a2, a1.tApprov as a3,
+
+		a2.fApprov as b1, a2.sApprov as b2, a2.tApprov as b3,
+
+		a3.fApprov as c1,
+
+		a3.sApprov as c2, a3.tApprov as c3,
+
+		a4.fApprov as d1, a4.sApprov as d2,
+
+		a4.tApprov as d3
+
+		from approvLine a1,
+
+		approvLine a2,
+
+		approvLine a3,
+
+		approvLine a4,
+
+		(select approv1,approv2,approv3,ifnull(approv4,null) as
+
+		approv4,line_order
+
+		from
+
+		<choose>
+
+			<when test="DOC == 1">
+
+				drafting_approval
+
+			</when>
+
+			<when test="DOC == 2">
+
+				disburse_approval
+
+			</when>
+
+			<when test="DOC == 3">
+
+				vacation_approval
+
+			</when>
+
+		</choose>
+
+		where approvNo = #{APNUM}) a5
+
+		where a1.lineNo = a5.approv1 and
+
+		a2.lineNo = ifnull(a5.approv2,'a_9999')
+
+		and a3.lineNo =
+
+		ifnull(a5.approv3,'a_9999') and a4.lineNo =
+
+		ifnull(a5.approv4,'a_9999');
+
+	</select>
+
+ 
+
+ 
+
+ 
+
+	<!-- 저장 된 결재선 불러오기 sql 끝 -->
+
+ 
+
+	<select id="getCurLineNumber" resultType="string">
+
+		SELECT lineNo
+
+		FROM
+
+		approvLine
+
+		ORDER BY lineNo DESC LIMIT 1,1
+
+	</select>
+
+	<select id="getCurDocNumOfdraft" resultType="string">
+
+		SELECT approvNo
+
+		FROM
+
+		drafting_approval
+
+		ORDER BY approvNo DESC LIMIT 1
+
+	</select>
+
+	<select id="getCurDocNumOfdisburse" resultType="string">
+
+		SELECT approvNo
+
+		FROM disburse_approval
+
+		ORDER BY approvNo DESC LIMIT 1
+
+	</select>
+
+	<select id="getCurDocNumOfvacation" resultType="string">
+
+		SELECT approvNo
+
+		FROM vacation_approval
+
+		ORDER BY approvNo DESC LIMIT 1
+
+	</select>
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+	<select id="getDraftView" parameterType="string"
+
+		resultType="map">
+
+		SELECT *
+
+		FROM drafting_approval
+
+		WHERE approvNo = #{APPROVNO}
+
+	</select>
+
+	<select id="getDisburseView" parameterType="string"
+
+		resultType="map">
+
+		SELECT *
+
+		FROM disburse_approval
+
+		WHERE approvNo = #{APPROVNO}
+
+	</select>
+
+	<select id="getVacationView" parameterType="string"
+
+		resultType="map">
+
+		SELECT *
+
+		FROM vacation_approval
+
+		WHERE approvNo = #{APPROVNO}
+
+	</select>
+
+ 
+
+	<!-- 나의 기안서 중 상태(대기, 진행, 반려)에 따른 결재들 가져오기 -->
+
+	<select id="getMiniApprovByType" parameterType="map"
+
+		resultType="map">
+
+		select * from(
+
+		select approvNo , title, approvDate , docNo
+
+		FROM drafting_approval
+
+		WHERE empNo = #{EMPNO} AND status = #{STATUS}
+
+		union all
+
+		select approvNo, title, approvDate, docNo
+
+		FROM
+
+		disburse_approval
+
+		WHERE empNo = #{EMPNO} AND status = #{STATUS}
+
+		union
+
+		all
+
+		select approvNo, reason, approvDate, docNo
+
+		FROM vacation_approval
+
+		WHERE empNo = #{EMPNO} AND status = #{STATUS}
+
+		) a
+
+		ORDER BY approvDate
+
+		DESC LIMIT 5;
+
+	</select>
+
+ 
+
+	<select id="getApprovTotalCount" parameterType="map"
+
+		resultType="int">
+
+		SELECT count(*)
+
+		FROM (
+
+		select approvNo , title, approvDate , docNo
+
+		FROM
+
+		drafting_approval
+
+		WHERE empNo = #{empNo} AND status = #{status}
+
+		union
+
+		all
+
+		select approvNo, title, approvDate, docNo
+
+		FROM disburse_approval
+
+		WHERE empNo = #{empNo} AND status = #{status}
+
+		union all
+
+		select approvNo,
+
+		reason, approvDate, docNo
+
+		FROM vacation_approval
+
+		WHERE empNo = #{empNo}
+
+		AND status = #{status}
+
+		) a
+
+		WHERE 1=0
+
+		<if test="SEARCHTITLE !=null"> or title like CONCAT('%',#{keyword},'%') </if>
+
+		<if test="type == 0 "> or 1=1 </if>
+
+	</select>
+
+ 
+
+	<select id="getKindApprovs" parameterType="map" resultType="map">
+
+		<!-- empNo, status, keyword, type, firstRow, endRow -->
+
+		SELECT *
+
+		FROM (
+
+			   SELECT @rownum := @rownum+1 as rnum, approvNo, title, approvDate,line_order,docNo, empNo
+
+			   FROM(
+
+					select approvNo , title, approvDate,line_order, docNo, empNo
+
+					FROM drafting_approval
+
+					WHERE empNo = #{empNo} AND status = #{status}
+
+					union all
+
+					select approvNo, title, approvDate,line_order, docNo, empNo
+
+					FROM disburse_approval
+
+					WHERE empNo = #{empNo} AND status = #{status}
+
+					union all
+
+					select approvNo, reason, approvDate,line_order, docNo, empNo
+
+					FROM vacation_approval
+
+					WHERE empNo = #{empNo} AND status = #{status}
+
+		       ) a
+
+			   , (SELECT @rownum := 0) dummy
+
+			   WHERE 1 = 0
+
+			   <if test="SEARCHTITLE != null">OR title LIKE CONCAT('%',#{keyword},'%')</if>
+
+			   <if test="type == 0">or 1=1</if>
+
+			   ORDER BY approvDate DESC
+
+		) list
+
+		WHERE rnum BETWEEN #{firstRow} AND #{endRow}
+
+	</select>
+
+ 
+
+	<select id="currentApprovLineEmp" parameterType="map"
+
+		resultType="map">
+
+		SELECT empNo, empName, deptName
+
+		FROM empInfo
+
+		WHERE empNo = (SELECT IF(curApprov =1,fApprov,IF(curApprov =2,sApprov,tApprov))
+
+					   FROM approvLine
+
+					   WHERE lineNo = ( SELECT line_order
+
+										FROM
+
+										<choose>
+
+											<when test="docType == 1">drafting_approval</when>
+
+											<when test="docType == 2">disburse_approval</when>
+
+											<when test="docType == 3">vacation_approval</when>
+
+										</choose>
+
+										WHERE approvNo = #{approvNo}
+
+									   )
+
+					   )
+
+	</select>
+
+ 
+
+	<select id="getReqCount" parameterType="string" resultType="int">
+
+	SELECT COUNT(*)
+
+	FROM(
+
+		SELECT @rownum := @rownum+1 as rnum, approvNo, title, approvDate, docNo, empNo
+
+		FROM(
+
+			 SELECT approvNo, approvDate, title, empNo, docNo
+
+			 FROM drafting_approval
+
+			 WHERE line_order in ( SELECT lineNo
+
+                     			  FROM approvLine
+
+                     			  WHERE #{empNo} = IF(curApprov =1,fApprov,IF(curApprov =2,sApprov,tApprov)))
+
+			 UNION ALL
+
+			 SELECT approvNo, approvDate, title, empNo, docNo
+
+			 FROM disburse_approval
+
+			 WHERE line_order in ( SELECT lineNo
+
+                     			  FROM approvLine
+
+                     			  WHERE #{empNo} = IF(curApprov =1,fApprov,IF(curApprov =2,sApprov,tApprov)))
+
+			 UNION ALL
+
+			 SELECT approvNo, approvDate, reason, empNo, docNo
+
+			 FROM vacation_approval
+
+			 WHERE line_order in ( SELECT lineNo
+
+                     			  FROM approvLine
+
+                     			  WHERE  #{empNo} = IF(curApprov =1,fApprov,IF(curApprov =2,sApprov,tApprov)))
+
+			) a
+
+			, (SELECT @rownum := 0) dummy) tab
+
+	</select>
+
+	<select id="getReqApprovs" parameterType="map" resultType="map">
+
+	SELECT *
+
+	FROM(
+
+		SELECT @rownum := @rownum+1 as rnum, approvNo, title, approvDate, docNo, empNo
+
+		FROM(
+
+			 SELECT approvNo, approvDate, title, empNo, docNo
+
+			 FROM drafting_approval
+
+			 WHERE line_order in ( SELECT lineNo
+
+                     			  FROM approvLine
+
+                     			  WHERE #{empNo} = IF(curApprov =1,fApprov,IF(curApprov =2,sApprov,tApprov)))
+
+			 UNION ALL
+
+			 SELECT approvNo, approvDate, title, empNo, docNo
+
+			 FROM disburse_approval
+
+			 WHERE line_order in ( SELECT lineNo
+
+                     			  FROM approvLine
+
+                     			  WHERE #{empNo} = IF(curApprov =1,fApprov,IF(curApprov =2,sApprov,tApprov)))
+
+			 UNION ALL
+
+			 SELECT approvNo, approvDate, reason, empNo, docNo
+
+			 FROM vacation_approval
+
+			 WHERE line_order in ( SELECT lineNo
+
+                     			  FROM approvLine
+
+                     			  WHERE  #{empNo} = IF(curApprov =1,fApprov,IF(curApprov =2,sApprov,tApprov)))
+
+			) a
+
+			, (SELECT @rownum := 0) dummy
+
+		WHERE 1 = 0
+
+		<if test="SEARCHTITLE != null">OR title LIKE CONCAT('%',#{keyword},'%')</if>
+
+		<if test="type == 0">or 1=1</if>
+
+		ORDER BY approvDate DESC
+
+	) list
+
+	WHERE rnum BETWEEN #{firstRow} AND #{endRow}
+
+	</select>
+
+	
+
+	<update id="doDenyToLineOrder" parameterType="map">
+
+	    UPDATE <choose>
+
+                	<when test="docType == 'dr'">drafting_approval </when>
+
+                	<when test="docType == 'di'">disburse_approval </when>
+
+                	<when test="docType == 'va'">vacation_approval </when>
+
+                </choose>
+
+		SET line_order = approv1, status = 3, etc = #{ETC}
+
+		WHERE approvNo = #{approvNo}
+
+	</update>
+
+	
+
+	<update id="doDenyToCurApprov" parameterType="map">
+
+		UPDATE approvLine
+
+		SET curApprov = 1
+
+		WHERE lineNo = (SELECT line_order
+
+                		FROM <choose>
+
+                				<when test="docType == 'dr'">drafting_approval</when>
+
+                				<when test="docType == 'di'">disburse_approval</when>
+
+                				<when test="docType == 'va'">vacation_approval</when>
+
+                			 </choose>
+
+                		WHERE approvNo =  #{approvNo})
+
+	</update>
+
+	
+
+	
+
+	
+
+	
+
+	<select id="getAllLinesByDoc" parameterType="map" resultType="map">
+
+		SELECT fApprov, sApprov, tApprov
+
+		FROM approvLine
+
+		WHERE lineNo = (SELECT approv1
+
+                		FROM <choose>
+
+                				<when test="docType.equals('dr')">drafting_approval </when>
+
+                				<when test="docType.equals('di')">disburse_approval </when>
+
+                				<when test="docType.equals('va')">vacation_approval </when>
+
+                			</choose>
+
+                		WHERE approvNo = #{approvNo})
+
+		UNION ALL
+
+		SELECT fApprov, sApprov, tApprov
+
+		FROM approvLine
+
+		WHERE lineNo = (SELECT approv2
+
+                		FROM <choose>
+
+                				<when test="docType.equals('dr')">drafting_approval </when>
+
+                				<when test="docType.equals('di')">disburse_approval </when>
+
+                				<when test="docType.equals('va')">vacation_approval </when>
+
+                			</choose>
+
+                		WHERE approvNo = #{approvNo})
+
+		UNION ALL
+
+		SELECT fApprov, sApprov, tApprov
+
+		FROM approvLine
+
+		WHERE lineNo = (SELECT approv3
+
+               		 	FROM <choose>
+
+                				<when test="docType.equals('dr')">drafting_approval </when>
+
+                				<when test="docType.equals('di')">disburse_approval </when>
+
+                				<when test="docType.equals('va')">vacation_approval </when>
+
+                			</choose>
+
+                		WHERE approvNo = #{approvNo})
+
+		UNION ALL
+
+		SELECT fApprov, sApprov, tApprov
+
+		FROM approvLine
+
+		WHERE lineNo = (SELECT approv4
+
+                		FROM <choose>
+
+                				<when test="docType.equals('dr')">drafting_approval </when>
+
+                				<when test="docType.equals('di')">disburse_approval </when>
+
+                				<when test="docType.equals('va')">vacation_approval </when>
+
+                			</choose>
+
+                		WHERE approvNo = #{approvNo})
+
+	</select>
+
+	
+
+	<update id="updateLineOrder" parameterType="map">	
+
+		UPDATE <choose>
+
+				   <when test="docType.equals('dr')">drafting_approval </when>
+
+                   <when test="docType.equals('di')">disburse_approval </when>
+
+                   <when test="docType.equals('va')">vacation_approval </when>
+
+			   </choose>
+
+	 	SET line_order = <choose>
+
+	 						<when test="line_order == 1">approv1</when>
+
+	 						<when test="line_order == 2">approv2</when>
+
+	 						<when test="line_order == 3">approv3</when>
+
+	 						<when test="line_order == 4">approv4</when>
+
+	 						<otherwise>'A_9999' , status = 2</otherwise>
+
+	 					 </choose>
+
+	 	WHERE approvNo = #{approvNo}
+
+	</update>
+
+	
+
+	<update id="updateCurApporv" parameterType="map">
+
+		UPDATE approvLine
+
+		SET curApprov = #{curApprov}
+
+		WHERE lineNo = (SELECT line_order
+
+						FROM <choose>
+
+								 <when test="docType.equals('dr')">drafting_approval </when>
+
+				                 <when test="docType.equals('di')">disburse_approval </when>
+
+				                 <when test="docType.equals('va')">vacation_approval </when>
+
+							 </choose>
+
+						WHERE approvNo = #{approvNo})
+	</update>
+	
+	<select id = "getApprovData" parameterType="map" resultType="map">
+		SELECT *
+		FROM <choose>	
+
+				 <when test="docType.equals('dr')">drafting_approval </when>
+
+	             <when test="docType.equals('di')">disburse_approval </when>
+
+	             <when test="docType.equals('va')">vacation_approval </when>
+
+			 </choose>
+		WHERE approvNo = #{approvNo}
+	</select>
+
+</mapper>

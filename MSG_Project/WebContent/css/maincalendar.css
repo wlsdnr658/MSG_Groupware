@@ -1,0 +1,147 @@
+ #comments li {
+      border-bottom: 1px solid silver;
+      margin-bottom: 10px;
+   }
+   
+   
+   #commentLi {
+      padding-bottom: 3px;
+   }
+   
+   #modal-modify {
+   width: 200px;
+   height: 50px;
+   background-color: #ece7e7;
+   position: absolute;
+   top: 85%;
+   left: 60%;
+   padding: 10px;
+/*    margin-top: -20px; */
+   margin-left: -100px;
+   z-index: 1000;
+   border: 1px solid gray;
+   }
+
+   #modifyBtn {
+      font-size: 11px;
+      background-color: white; 
+      border: 1px solid gray; 
+      cursor: pointer;
+      padding: 2px;
+   }
+   
+   #deleteBtn{
+      background-color: white; 
+      border: 1px solid gray; 
+      padding: 2px;
+      cursor: pointer;
+      padding: 2px;
+   }
+   #updateBtn{
+      background-color: white; 
+      border: 1px solid gray; 
+      padding: 2px;
+      cursor: pointer;
+      padding: 2px;
+   }
+   #listBtn{
+      background-color: white; 
+      border: 1px solid gray; 
+      padding: 2px;
+      cursor: pointer;
+      padding: 2px;
+   }
+   #btn-close {
+      background-color: white; 
+      border: 1px solid gray; 
+      padding: 2px;
+      cursor: pointer;
+      padding: 2px;
+   }
+   
+   #participantBtn{
+      background-color: white; 
+      border: 1px solid gray; 
+      padding: 2px;
+      cursor: pointer;
+      padding: 2px;
+      margin-top: 3px;
+      display: inline-block;
+   }
+   
+   #participant_div{
+      position: absolute;
+      top: 210px;  
+      left: 700px;
+      width : 150px;   
+      height : 100px;
+      background-color: #F6F6F6;
+      display: inline-block;
+      padding: 10px; 
+      z-index: 1000;
+      border : 1px solid lightgray;
+   }
+   
+   #mask {
+      position: absolute;
+      left: 0;   
+      top: 0;  
+      z-index: 900;
+      background-color: #333;
+      opacity: 0.7;
+      display: none;
+   }
+   
+   #closeBtn{  
+      width : 40px;
+      height : 23px;
+       position: absolute;   
+      margin-top: 80px;    
+      margin-left: 160px;  
+   }
+   
+   #contentBox{
+      width: 600px;  
+      height: 80px;
+   }
+   
+   #chart_div {
+      width: 500px;
+   }
+   
+   #taskListTable {
+      border: 1px solid black;
+      border-collapse: collapse;
+   }
+   
+   #taskListTable td {
+      text-align: center;
+      width: 300px;
+   }
+   
+   #taskListTable #taskth1 {
+      background-color: #fb2525;
+      padding-bottom: 5px;
+      padding-top: 5px;
+      text-align: left;
+      padding-left: 10px;
+      color: white;
+      
+   }
+   
+   #taskListTable #taskth2 {
+      background-color: #ece5e5;
+      padding-bottom: 5px;
+      padding-top: 5px;
+      border-bottom: 1px solid silver;
+      text-align: left;
+      padding-left: 18px;
+   }
+   
+   #taskListTable #plus {
+      width: 17px;
+      height: 18px;
+      float: right;  
+      margin-right: 5px;  
+      cursor: pointer;
+   }

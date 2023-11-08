@@ -1,0 +1,1153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dao.MailDao">
+	
+	<!-- 파일 불러오기 -->
+	<select id="selectuploadFromMailMap" parameterType="map" resultType="map">
+		 select u.fileName from 
+			(select * from send_mail order by mailNo)s left join uploadFromMail u
+			on s.mailNo = u.mailNo
+			where s.mailNo = #{mailNo} and u.fileNo = #{fileNo};
+	</select>
+	
+	<!-- 파일 불러오기 -->
+	<select id="selectuploadFromMailList" parameterType="int" resultType="map">
+	 select u.fileName,u.fileNo from 
+			(select * from send_mail order by mailNo)s left join uploadFromMail u
+			on s.mailNo = u.mailNo
+			where s.mailNo = #{mailNo}
+	</select>
+	
+	<!-- 파일 가져오기 -->
+	<select id="selectuploadFromMail" parameterType="int" resultType="map">
+		select * from  
+			uploadFromMail
+			where mailNo = #{mailNo}
+	</select>
+	
+	
+	<!-- 업데이트 파일 -->
+	<update id="updateFileMailNo" parameterType="int">
+	update uploadFromMail
+  	set mailNo = #{newmailNo}
+	where mailNo = #{oldmailNo}
+	</update>
+	
+	
+	<!-- 받은메일함 메인에서 보여주기 -->
+	<select id="selectReceiverMain" parameterType="String" resultType="map">
+		select * from receive
+   where receiverId=#{empNo}
+   union all 
+    select * from carbon 
+    where carbonId=#{empNo}
+    order by mailNo desc
+	</select>
+	 
+	<!-- 받은메일함 보여주기 -->
+	<select id="selectReceiver" parameterType="map" resultType="map">
+<!-- 	select * from (  -->
+<!--     select concat('(받은메일)',s.title) as title,date_format(s.writedate,"%Y-%m-%d %h:%m") as writeDate, s.senderId, r.mailNo, 'r',readStatus, receiverId -->
+<!--       from receive_mail r, send_mail s -->
+<!--      where r.mailNo = s.mailNo -->
+<!--             and r.mailstatus='1' -->
+<!--             and r.receiverId=#{empNo} -->
+<!--     union all -->
+<!--     select concat('(받은메일)[참조]',s.title) as title ,date_format(s.writedate,"%Y-%m-%d %h:%m") as writeDate, s.senderId, c.mailNo, 'c',readStatus, carbonId  -->
+<!--     from carbon_mail c, send_mail s -->
+<!--     where c.mailNo = s.mailNo -->
+<!--             and c.mailstatus='1' -->
+<!--             and c.carbonId=#{empNo} -->
+<!-- 		) receive -->
+<!-- 		order by mailNo desc -->
+		
+<!-- 		select r1.* from( -->
+<!--    select r.*,@rownum:=@rownum+1 as rnum from -->
+<!--    (select * from receive -->
+<!--    where receiverId=#{empNo} -->
+<!--    union all  -->
+<!--     select * from carbon  -->
+<!--     where carbonId=#{empNo}) r,(select @rownum:=0)q -->
+<!--     group by r.title, r.writeDate, r.senderId, r.mailNo,r.readStatus,r.receiverId,rnum -->
+<!--     order by rnum desc) r1  -->
+<!--     where rnum between #{firstRow} and #{endRow} -->
+	
+<!--    select r1.* from( -->
+<!--    select r.*,@rownum:=@rownum+1 as rnum from -->
+<!--    (select * from receive -->
+<!--    where receiverId=#{empNo} -->
+<!--    union all  -->
+<!--     select * from carbon  -->
+<!--     where carbonId=#{empNo}) r,(select @rownum:=0)q -->
+<!--     where 1=0  -->
+<!--     <if test="title!=null">or title like concat('%',#{title},'%') </if> -->
+<!--     <if test="senderId!=null">or senderId like concat('%',#{senderId},'%')</if> -->
+<!--     <if test="writeDate !=null">or writeDate like concat('%',#{writeDate},'%')</if> -->
+<!--     <if test="type == 0 ">or 1=1</if> -->
+<!--     group by r.title, r.writeDate, r.senderId, r.mailNo,r.readStatus,r.receiverId,rnum -->
+<!--     order by rnum asc) r1 -->
+<!--     where rnum between #{firstRow} and #{endRow} -->
+   select r1.* from(
+   select r.*,@rownum:=@rownum+1 as rnum from
+   (select * from receive
+   where receiverId=#{empNo}
+   union all 
+    select * from carbon 
+    where carbonId=#{empNo}) r,(select @rownum:=0)q
+    where 1=0
+   <if test="title!=null">or title like concat('%',#{title},'%') </if>
+     <if test="empName!=null">or empName like concat('%',#{empName},'%')</if>
+    <if test="writeDate !=null">or writeDate like concat('%',#{writeDate},'%')</if> 
+    <if test="type == 0 ">or 1=1</if> 
+    group by r.title, r.writeDate, r.senderId, r.mailNo,r.readStatus,r.receiverId,rnum
+    order by mailNo desc) r1
+    where rnum between #{firstRow} and #{endRow}
+     </select>
+     
+    <!-- total receive 카운트 --> 
+    <select id="totalreceiveCount" resultType="int" parameterType="map">
+  	   select sum(cnt)
+          from (
+                select count(*) cnt
+                from receive
+                where 1=0 
+                or receiverId = #{empNo}       
+    <if test="title!=null">and title like '%${title}%' </if> 
+    <if test="empName!=null">and empName like '%${empName}%'</if> 
+    <if test="writeDate !=null">and writeDate like '%${writeDate}%'</if> 
+    <if test="type == 0 ">and 1=1</if>
+                union all
+                select count(*) cnt
+                from carbon
+                where 1=0
+                or carbonId = #{empNo}      
+    <if test="title!=null">and title like '%${title}%' </if> 
+    <if test="empName!=null">and empName like  '%${empName}%'</if> 
+    <if test="writeDate !=null">and writeDate like '%${writeDate}%'</if>
+    <if test="type == 0 ">and 1=1</if>
+            ) a   
+    </select> 
+     
+     
+<!--      받은메일에서 받는이 -->
+<!--      <select id="selectReceiveReceiver" parameterType="String" resultType="map"> -->
+<!--       select * from receive_mail where receiverId=#{empNo}  -->
+<!--      </select> -->
+     
+<!--      받은메일에서 참조인 -->
+<!--      <select id="selectReceiveCarbon" parameterType="String" resultType="map"> -->
+<!--       select * from carbon_mail where carbonId=#{empNo}  -->
+<!--      </select> -->
+ 
+     <!-- 메일함 상세보여주기(보낸이) -->
+     <select id="selectInboxViewSend" parameterType="int" resultType="map">
+		 select s.title, s.content, date_format(writeDate,"%Y-%m-%d %H:%i") as writeDate, s.senderId
+                ,s.mailNo,e.empName from send_mail s, emp e 
+                where s.senderId = e.empNo
+                and mailNo=#{mailNo}
+	</select>
+	<!-- 메일함 상세보여주기(보낸이) -->
+<!-- 	<select id="selectInboxViewSend" parameterType="int" resultType="map"> -->
+<!-- 		select s.* , u.fileName  -->
+<!--   		  from send_mail s left join uploadFromMail u -->
+<!--             on  s.mailNo  = u.mailNo -->
+<!--          where s.mailNo = #{mailNo} -->
+<!-- 	</select> -->
+	
+	<!-- 받은 메일함 상세보여주기(받는이) -->
+	<select id="selectReceiveInboxViewReceive" parameterType="int" resultType="map">
+		select * from receive_mail r, emp e 
+    where r.receiverId = e.empNo
+    and mailNo=#{mailNo}
+	</select>
+	
+	<!-- 받은 메일함 상세보여주기(참조인) -->
+	<select id="selectReceiveInboxViewCarbon" parameterType="int" resultType="map">
+		select *from carbon_mail c, emp e
+    	where c.carbonId = e.empNo
+    	and mailNo=#{mailNo}
+	</select>
+	
+	<!--  보낸메일함 보여주기(메인)--> 
+	<select id="selectSenderMain" parameterType="String" resultType="map">
+<!-- 	 select s.title,date_format(s.writedate,"%Y-%m-%d %h:%m") as writeDate,  -->
+<!-- 			r2.receiverId, s.mailNo, r2.mailNum,s.senderId,s.mailstatus -->
+<!--         from send_mail s -->
+<!--         inner join ( -->
+<!--                     select r3.mailNo, min(mailNum) mailNum -->
+<!--                     from receive_mail r3, send_mail s3 -->
+<!--                     where r3.mailNo = s3.mailNo  -->
+<!--                         and s3.senderId=#{empNo}  -->
+<!--                     group by r3.mailNo -->
+<!--         ) r1 on s.mailNo = r1.mailNo -->
+<!--         inner join receive_mail r2 on r1.mailNum = r2.mailNum -->
+<!--         where s.mailstatus='1' -->
+<!--         and s.senderId=#{empNo} -->
+<!--         order by mailNo desc   -->
+			  select s.mailNo, s.mailNum, s2.title, date_format(writeDate,"%Y-%m-%d %H:%i") as writeDate,
+                s2.senderId, s2.receiverId, s2.mailstatus, s2.empName
+            from send s, send2 s2
+            where s.mailNum= s2.mailNum
+           and s.senderId=#{empNo}
+           order by s.mailNo desc
+	</select>
+	<!--  보낸메일함 보여주기--> 
+		<select id="selectSender" parameterType="map" resultType="map">
+<!-- 			  select r1.* from( -->
+<!--            select r.*,@rownum:=@rownum+1 as rnum from -->
+<!--            (select s.mailNo, s.mailNum, s2.title, writeDate, -->
+<!--                 s2.senderId, s2.receiverId, s2.mailstatus -->
+<!--             from send s, send2 s2 -->
+<!--             where s.mailNum= s2.mailNum -->
+<!--             and s.senderId=#{empNo}) r,(select @rownum:=0)q -->
+<!--             where 1=0 -->
+<!--             <if test="title!=null">or title like concat('%',#{title},'%') </if> -->
+<!--             <if test="receiverId!=null">or receiverId like concat('%',#{receiverId},'%')</if> -->
+<!--             <if test="writeDate !=null">or writeDate like concat('%',#{writeDate},'%')</if> -->
+<!--              <if test="type == 0 ">or 1=1</if> -->
+<!--             group by r.mailNo, r.mailNum, r.title, r.writeDate, -->
+<!--                r.senderId, r.receiverId, r.mailstatus, rnum  -->
+<!--                order by rnum desc) r1 -->
+<!--                 where rnum between #{firstRow} and #{endRow} -->
+			select r1.* from(
+           select r.*,@rownum:=@rownum+1 as rnum from
+           (select s.mailNo, s.mailNum, s2.title, writeDate,
+                s2.senderId, s2.receiverId, s2.mailstatus, s2.empName
+            from send s, send2 s2
+            where s.mailNum= s2.mailNum
+            and s.senderId=#{empNo}
+            order by mailNo desc) r,(select @rownum:=0)q
+            where 1=0
+            <if test="title!=null">or title like concat('%',#{title},'%') </if>
+            <if test="empName!=null">or empName like concat('%',#{empName},'%')</if>
+            <if test="writeDate !=null">or writeDate like concat('%',#{writeDate},'%')</if>
+             <if test="type == 0 ">or 1=1</if>
+            group by r.mailNo, r.mailNum, r.title, r.writeDate,
+               r.senderId, r.receiverId, r.mailstatus, rnum 
+               order by mailNo desc) r1
+                where rnum between #{firstRow} and #{endRow}
+	</select>
+	
+	<!-- total sender 카운트 --> 
+    <select id="totalsenderCount" resultType="int" parameterType="map">
+  	  select count(*)
+            from send s, send2 s2
+            where s.mailNum= s2.mailNum
+            and s.senderId=#{empNo}
+        	<if test="title!=null">and title like concat('%',#{title},'%') </if>
+            <if test="empName!=null">and empName like concat('%',#{empName},'%')</if>
+            <if test="writeDate !=null">and writeDate like concat('%',#{writeDate},'%')</if>
+    </select> 
+	
+	
+	
+	<!-- 보낸 메일함 상세보여주기(받는이) -->
+	<select id="selectSenderInboxViewReceive" parameterType="int" resultType="map">
+		select * from receive_mail r, emp e 
+    where r.receiverId = e.empNo
+    and mailNo=#{mailNo}
+	</select>
+	
+	<!-- 보낸 메일함 상세보여주기(참조인) -->
+	<select id="selectSenderInboxViewCarbon" parameterType="int" resultType="map">
+		select *from carbon_mail c, emp e
+    	where c.carbonId = e.empNo
+    	and mailNo=#{mailNo}
+	</select>
+	
+	
+	<!-- 참조인 보여주기 -->
+<!-- 	<select id="selectCarbon" resultType="map"> -->
+<!-- 		select * from carbon_mail -->
+<!-- 	</select> -->
+	
+	<!-- 내게쓴메일함 보여주기 -->
+	<select id="selectMySender" parameterType="map" resultType="map">
+<!-- 		 select title ,date_format(writedate,"%Y-%m-%d %h:%m") as writeDate,  -->
+<!-- 			senderId, mailNo  -->
+<!-- 			from send_mail where mailstatus ='4' and senderId=#{empNo}  -->
+<!-- 			order by writeDate desc  -->
+	select r1.* from(
+            select r.*,@rownum:=@rownum+1 as rnum from(
+            select s.title ,date_format(writeDate,"%Y-%m-%d %H:%i") as writeDate, 
+			s.senderId, s.mailNo, e.empName 
+			from send_mail s, emp e
+            where s.senderId = e.empNo
+            and s.mailstatus ='4' and s.senderId=#{empNo}
+			order by mailNo desc)r,(select @rownum:=0)q
+            where 1=0
+            <if test="title!=null">or title like concat('%',#{title},'%') </if>
+            <if test="empName!=null">or empName like concat('%',#{empName},'%')</if>
+            <if test="writeDate !=null">or writeDate like concat('%',#{writeDate},'%')</if>
+             <if test="type == 0 ">or 1=1</if>
+            group by r.title , r.writeDate, 
+			r.senderId, r.mailNo 
+			order by mailNo desc)r1
+            where rnum between #{firstRow} and #{endRow}
+
+	</select>
+	
+	<!-- total Mysender 카운트 --> 
+    <select id="totalMySenderCount" resultType="int" parameterType="map">
+  	  select count(*)
+            from send_mail s, emp e
+            where s.senderId = e.empNo
+            and mailstatus ='4'
+            and senderId=#{empNo}
+        	<if test="title!=null">and title like concat('%',#{title},'%') </if>
+            <if test="empName!=null">and empName like concat('%',#{empName},'%')</if>
+            <if test="writeDate !=null">and writeDate like concat('%',#{writeDate},'%')</if>
+    </select> 
+	
+	<!-- 내게쓴메일함 상세보여주기 -->
+	<select id="selectMySenderView" parameterType="int" resultType="map">
+<!-- 		select title ,date_format(writedate,"%Y-%m-%d %H:%i") as writeDate, senderId, -->
+<!-- 		content,mailNo,mailstatus -->
+<!-- 		from send_mail where mailNo=#{mailNo} -->
+		select s.title ,date_format(writeDate,"%Y-%m-%d %H:%i") as writeDate, s.senderId,
+		s.content,s.mailNo,s.mailstatus, e.empName
+		from send_mail s, emp e 
+        where mailNo=#{mailNo}
+        and s.senderId = e.empNo
+        and mailstatus='4'
+	</select>
+		
+	<!-- 임시저장함 보여주기 -->
+	<select id="selectDrafts" parameterType="map" resultType="map">
+<!-- 		 select s.title,date_format(s.writedate,"%Y-%m-%d %h:%m") as writeDate, 's',  -->
+<!-- 			d2.receiverId, s.mailNo ,s.mailstatus -->
+<!--         from send_mail s -->
+<!--         inner join ( -->
+<!--                     select d3.mailNo, min(mailNum) mailNum -->
+<!--                     from draft_mail d3, send_mail s3 -->
+<!--                     where d3.mailNo = s3.mailNo  -->
+<!--                         and s3.senderId=#{empNo}  -->
+<!--                     group by d3.mailNo -->
+<!--         ) d1 on s.mailNo = d1.mailNo -->
+<!--         inner join draft_mail d2 on d1.mailNum =d2.mailNum -->
+<!--         where s.mailstatus='6' -->
+<!--         and s.senderId=#{empNo}  -->
+<!--         union all -->
+<!-- 		select r1.* from( -->
+<!--             select r.*,@rownum:=@rownum+1 as rnum from -->
+<!--             (select s.title,date_format(s.writedate,"%Y-%m-%d %H:%i") as writeDate, 's',   -->
+<!--  			d2.receiverId, s.mailNo ,s.mailstatus  -->
+<!--         from send_mail s  -->
+<!--          inner join (  -->
+<!--                     select d3.mailNo, min(mailNum) mailNum  -->
+<!--                      from draft_mail d3, send_mail s3  -->
+<!--                      where d3.mailNo = s3.mailNo   -->
+<!--                          and s3.senderId=#{empNo}   -->
+<!--                     group by d3.mailNo -->
+<!--        ) d1 on s.mailNo = d1.mailNo  -->
+<!--         inner join draft_mail d2 on d1.mailNum =d2.mailNum  -->
+<!--         where s.mailstatus='6'  -->
+<!--          and s.senderId=#{empNo} -->
+<!--          union all  -->
+<!--         select title ,date_format(writedate,"%Y-%m-%d %H:%i") as writeDate, 'm',   -->
+<!-- 			senderId, mailNo, mailstatus   -->
+<!--  			from send_mail where mailstatus ='5' and senderId=#{empNo}) r,(select @rownum:=0)q -->
+<!--             where 1=0 -->
+<!--              <if test="title!=null">or title like concat('%',#{title},'%') </if> -->
+<!--             <if test="receiverId!=null">or receiverId like concat('%',#{receiverId},'%')</if> -->
+<!--             <if test="writeDate !=null">or writeDate like concat('%',#{writeDate},'%')</if> -->
+<!--              <if test="type == 0 ">or 1=1</if>  -->
+<!--             group by r.writeDate, r.title, r.writeDate,r.s,r.receiverId,r.mailstatus,rnum -->
+<!--             order by rnum desc) r1 -->
+<!--             where rnum between #{firstRow} and #{endRow} -->
+			select r1.* from(
+            select r.*,@rownum:=@rownum+1 as rnum from
+            (select d2.title,date_format(d2.writeDate,"%Y-%m-%d %H:%i") as writeDate, 's',  
+ 			d2.receiverId, d.mailNo ,d2.mailstatus,d2.empName 
+            from draft d, draft2 d2
+            where d.mailNum= d2.mailNum
+           and d.senderId=#{empNo}
+         union all 
+       select s.title ,date_format(writeDate,"%Y-%m-%d %H:%i") as writeDate, 'm',  
+			s.senderId, s.mailNo, s.mailstatus, e.empName  
+ 			from send_mail s, emp e 
+            where mailstatus ='5'
+            and s.senderId = e.empNo
+            and senderId=#{empNo}
+            order by mailNo desc) r,(select @rownum:=0)q
+            where 1=0
+   			<if test="title!=null">or title like concat('%',#{title},'%') </if>
+     		<if test="empName!=null">or empName like concat('%',#{empName},'%')</if>
+    		<if test="writeDate !=null">or writeDate like concat('%',#{writeDate},'%')</if> 
+    		<if test="type == 0 ">or 1=1</if> 
+            group by r.writeDate, r.title, r.writeDate,r.s,r.receiverId,r.mailstatus,rnum
+            order by mailNo desc) r1
+            where rnum between #{firstRow} and #{endRow}
+            
+	</select>
+	
+	 <!-- total draft 카운트 --> 
+    <select id="totaldraftCount" resultType="int" parameterType="map">
+  	   select sum(cnt)
+          from (
+                select count(*) cnt 
+                from draft d, draft2 d2
+                where d.mailNum= d2.mailNum
+                and d.senderId=#{empNo}	          
+    			<if test="title!=null">and title like '%${title}%' </if> 
+    			<if test="empName!=null">and empName like '%${empName}%'</if>
+    			<if test="writeDate !=null">and writeDate like '%${writeDate}%'</if> 
+    			<if test="type == 0 ">and 1=1</if>
+                union all
+                select count(*) cnt
+                from mydraft
+                where senderId=#{empNo}
+    <if test="title!=null">and title like '%${title}%' </if>
+    <if test="empName!=null">and empName like  '%${empName}%'</if>
+    <if test="writeDate !=null">and writeDate like '%${writeDate}%'</if>
+            ) a   
+    </select> 
+	
+	
+	
+<!-- 	<select id="selectdrafts" resultType="map"> -->
+<!-- 	select s.title, s.content ,date_format(s.writedate,"%Y-%m-%d %h:%m") as writeDate,  -->
+<!-- 			r.receiverId, c.carbonId, s.mailNo  -->
+<!--     from send_mail s, receive_mail r, carbon_mail c -->
+<!--     where s.mailNo = r.mailNo -->
+<!--     and s.mailNo = c.mailNo -->
+<!--     and s.mailstatus='5' -->
+<!--     and s.senderId=#{empNo} -->
+<!--     order by s.mailNo desc -->
+<!-- 	</select> -->
+
+	<!-- 임시 저장함 상세보여주기-->
+     <select id="selectDraftsInboxView" parameterType="int" resultType="map">
+<!-- 		    select title, content, date_format(writedate,"%Y-%m-%d %h:%m") as writeDate, senderId -->
+<!--              ,mailNo,mailstatus from send_mail where mailNo=#{mailNo} -->
+ 			select s.title, s.content, date_format(s.writeDate,"%Y-%m-%d %H:%i") as writeDate, s.senderId
+             ,s.mailNo,s.mailstatus,e.empName 
+             from send_mail s, emp e
+             where s.senderId = e.empNo
+             and mailNo=#{mailNo}
+	</select>
+	
+	<!-- 임시 저장함 받는이 참조인 상세보여주기-->
+<!--      <select id="selectDraftsInboxViewMail" parameterType="int" resultType="map"> -->
+<!-- 		select * -->
+<!--                  from draft_mail where mailNo=#{mailNo}  -->
+<!-- 	</select> -->
+
+<!-- 임시 저장함 받는이  상세보여주기-->
+     <select id="selectDraftsInboxViewReceive" parameterType="int" resultType="map"> 
+		select * 
+                from draft_Mail_receive r, emp e 
+                where r.receiverId = e.empNo 
+                and mailNo=#{mailNo}
+ 		</select> 
+
+<!-- 임시 저장함 잠조인 상세보여주기-->
+     <select id="selectDraftsInboxViewCarbon" parameterType="int" resultType="map">
+		select * 
+                from draft_Mail_carbon r, emp e 
+                where r.carbonId = e.empNo 
+                and mailNo=#{mailNo}
+ 		</select> 	
+	
+	
+
+	<!--휴지통 보여주기 -->
+	<select id="selectdelete" parameterType="String" resultType="map">
+<!-- 		    select * from (  -->
+<!--           select concat('[내게쓴편지함]',title) as title, date_format(writedate,"%Y-%m-%d %h:%m") as writeDate,senderId, mailNo,mailstatus,'my' -->
+<!--           from send_mail -->
+<!--           where mailstatus ='7' -->
+<!--           and senderId=#{empNo} -->
+<!--           union all -->
+<!--          select concat('[보낸편지함]',s.title) as title, date_format(s.writedate,"%Y-%m-%d %h:%m") as writeDate, r.receiverId, s.mailNo,s.mailstatus,'sd' -->
+<!--           from send_mail s -->
+<!--           inner join ( -->
+<!--                     select r3.mailNo, min(mailNum) mailNum -->
+<!--                     from receive_mail r3, send_mail s3 -->
+<!--                     where r3.mailNo = s3.mailNo  -->
+<!--                         and s3.senderId=#{empNo} -->
+<!--                     group by r3.mailNo -->
+<!--         ) r1 on s.mailNo = r1.mailNo -->
+<!--           inner join receive_mail r on r1.mailNum = r.mailNum -->
+<!--         where s.mailstatus='2' -->
+<!--         and s.senderId=#{empNo} -->
+<!--          union all -->
+<!--          select concat('[임시저장함]',s.title) as title, date_format(s.writedate,"%Y-%m-%d %h:%m") as writeDate,  -->
+<!-- 			d2.receiverId, s.mailNo,s.mailstatus,'dr' -->
+<!--             from send_mail s -->
+<!--         inner join ( -->
+<!--                     select d3.mailNo, min(mailNum) mailNum -->
+<!--                     from draft_mail d3, send_mail s3 -->
+<!--                     where d3.mailNo = s3.mailNo  -->
+<!--                         and s3.senderId=#{empNo} -->
+<!--                     group by d3.mailNo -->
+<!--         ) d1 on s.mailNo = d1.mailNo -->
+<!--         inner join draft_mail d2 on d1.mailNum =d2.mailNum -->
+<!--         where s.mailstatus='9' -->
+<!--         and s.senderId=#{empNo} -->
+<!--         union all -->
+<!--         select concat('[임시저장함(내게)]',title) as title,date_format(writedate,"%Y-%m-%d %h:%m") as writeDate,  -->
+<!-- 			senderId, mailNo, mailstatus,'dm' -->
+<!-- 			from send_mail  -->
+<!--             where mailstatus ='8'  -->
+<!--             and senderId=#{empNo} -->
+<!--         union all -->
+<!--     	select concat('[받은편지함(받은메일)]',s.title) as title,date_format(s.writedate,"%Y-%m-%d %h:%m") as writeDate, s.senderId, r.mailNo,r.mailstatus,'rr' -->
+<!--       	from receive_mail r, send_mail s -->
+<!--     	 where r.mailNo = s.mailNo -->
+<!--             and r.mailstatus ='13' -->
+<!--             and r.receiverId=#{empNo} -->
+<!--     	union all -->
+<!--     	select concat('[받은편지함(참조메일)]',s.title) as title ,date_format(s.writedate,"%Y-%m-%d %h:%m") as writeDate, s.senderId, c.mailNo, c.mailstatus,'rc' -->
+<!--     	from carbon_mail c, send_mail s -->
+<!--     	where c.mailNo = s.mailNo -->
+<!--             and c.mailstatus ='14' -->
+<!--             and c.carbonId=#{empNo} -->
+<!-- 		) receive -->
+<!-- 		order by writeDate desc; -->
+<!--  		select r1.* from( -->
+<!--            select r.*, @rownum:=@rownum+1 as rnum from -->
+<!--            (select * from (  -->
+<!--           select concat('[내게쓴편지함]',title) as title, date_format(writedate,"%Y-%m-%d %h:%m") as writeDate,senderId, mailNo,mailstatus,'my' -->
+<!--           from send_mail -->
+<!--           where mailstatus ='7' -->
+<!--           and senderId=#{empNo} -->
+<!--           union all -->
+<!--          select concat('[보낸편지함]',s.title) as title, date_format(s.writedate,"%Y-%m-%d %h:%m") as writeDate, r.receiverId, s.mailNo,s.mailstatus,'sd' -->
+<!--           from send_mail s -->
+<!--           inner join ( -->
+<!--                     select r3.mailNo, min(mailNum) mailNum -->
+<!--                     from receive_mail r3, send_mail s3 -->
+<!--                     where r3.mailNo = s3.mailNo  -->
+<!--                         and s3.senderId=#{empNo} -->
+<!--                     group by r3.mailNo -->
+<!--         ) r1 on s.mailNo = r1.mailNo -->
+<!--           inner join receive_mail r on r1.mailNum = r.mailNum -->
+<!--         where s.mailstatus='2' -->
+<!--         and s.senderId=#{empNo} -->
+<!--          union all -->
+<!--          select concat('[임시저장함]',s.title) as title, date_format(s.writedate,"%Y-%m-%d %h:%m") as writeDate,  -->
+<!-- 			d2.receiverId, s.mailNo,s.mailstatus,'dr' -->
+<!--             from send_mail s -->
+<!--         inner join ( -->
+<!--                     select d3.mailNo, min(mailNum) mailNum -->
+<!--                     from draft_mail d3, send_mail s3 -->
+<!--                     where d3.mailNo = s3.mailNo  -->
+<!--                         and s3.senderId=#{empNo} -->
+<!--                     group by d3.mailNo -->
+<!--         ) d1 on s.mailNo = d1.mailNo -->
+<!--         inner join draft_mail d2 on d1.mailNum =d2.mailNum -->
+<!--         where s.mailstatus='9' -->
+<!--         and s.senderId=#{empNo} -->
+<!--         union all -->
+<!--         select concat('[임시저장함(내게)]',title) as title,date_format(writedate,"%Y-%m-%d %h:%m") as writeDate,  -->
+<!-- 			senderId, mailNo, mailstatus,'dm' -->
+<!-- 			from send_mail  -->
+<!--             where mailstatus ='8'  -->
+<!--             and senderId=#{empNo} -->
+<!--         union all -->
+<!--     	select concat('[받은편지함(받은메일)]',s.title) as title,date_format(s.writedate,"%Y-%m-%d %h:%m") as writeDate, s.senderId, r.mailNo,r.mailstatus,'rr' -->
+<!--       	from receive_mail r, send_mail s -->
+<!--     	 where r.mailNo = s.mailNo -->
+<!--             and r.mailstatus ='13' -->
+<!--             and r.receiverId=#{empNo} -->
+<!--     	union all -->
+<!--     	select concat('[받은편지함(참조메일)]',s.title) as title ,date_format(s.writedate,"%Y-%m-%d %h:%m") as writeDate, s.senderId, c.mailNo, c.mailstatus,'rc' -->
+<!--     	from carbon_mail c, send_mail s -->
+<!--     	where c.mailNo = s.mailNo -->
+<!--             and c.mailstatus ='14' -->
+<!--             and c.carbonId=#{empNo} -->
+<!-- 		) receive)r,(select @rownum:=0)q -->
+<!-- 		where 1=0 -->
+<!--         <if test="title!=null">or title like concat('%',#{title},'%') </if> -->
+<!--         <if test="senderId!=null">or senderId like concat('%',#{senderId},'%')</if> -->
+<!--         <if test="writeDate !=null">or writeDate like concat('%',#{writeDate},'%')</if> -->
+<!--         <if test="type == 0 ">or 1=1</if> -->
+<!-- 		group by r.title, r.writeDate, r.senderId,r.mailNo,r.mailstatus,r.my,rnum -->
+<!--         order by rnum desc) r1 -->
+<!--         where rnum between #{firstRow} and #{endRow} -->
+ 			 select r1.* from(
+           select r.*, @rownum:=@rownum+1 as rnum from
+           (select * from ( 
+          select concat('[내게쓴편지함]',title) as title, date_format(writeDate,"%Y-%m-%d %H:%i") as writeDate,senderId, mailNo,mailstatus,'my', e.empName
+          from send_mail s, emp e
+          where mailstatus ='7'
+          and s.senderId = e.empNo
+          and senderId=#{empNo}
+          union all
+         select concat('[보낸편지함]',s2.title) as title, writeDate, s2.receiverId, s.mailNo, s2.mailstatus,'sd',s2.empName
+            from send s, send2delete s2
+            where s.mailNum= s2.mailNum
+            and s.senderId=#{empNo}
+         union all
+        select concat('[임시저장함]',s2.title) as title, writeDate, s2.receiverId, s.mailNo, s2.mailstatus,'sd',s2.empName
+            from draft s, draft2delete s2
+            where s.mailNum= s2.mailNum
+            and s.senderId=#{empNo}
+        union all
+        select concat('[임시저장함(내게)]',s.title) as title,date_format(writeDate,"%Y-%m-%d %H:%i") as writeDate, 
+			s.senderId, s.mailNo, s.mailstatus,'dm',e.empName
+			from send_mail s, emp e
+            where mailstatus ='8'
+            and s.senderId = e.empNo
+            and senderId=#{empNo}
+        union all
+    	select concat('[받은편지함(받은메일)]',s.title) as title,date_format(s.writeDate,"%Y-%m-%d %H:%i") as writeDate, s.senderId, r.mailNo,r.mailstatus,'rr',e.empName
+      	from receive_mail r, send_mail s, emp e
+    	 where r.mailNo = s.mailNo
+          and s.senderId = e.empNo
+            and r.mailstatus ='13'
+            and r.receiverId=#{empNo}
+    	union all
+    	 select concat('[받은편지함(참조메일)]',s.title) as title ,date_format(s.writeDate,"%Y-%m-%d %H:%i") as writeDate, s.senderId, c.mailNo, c.mailstatus,'rc',e.empName
+    	from carbon_mail c, send_mail s, emp e
+    	where c.mailNo = s.mailNo
+            and s.senderId = e.empNo
+            and c.mailstatus ='14'
+            and c.carbonId=#{empNo}
+		) receive
+        order by mailNo desc)r,(select @rownum:=0)q
+		where 1=0
+        <if test="title!=null">or title like concat('%',#{title},'%') </if>
+        <if test="empName!=null">or empName like concat('%',#{empName},'%')</if>
+        <if test="writeDate !=null">or writeDate like concat('%',#{writeDate},'%')</if>
+        <if test="type == 0 ">or 1=1</if>
+		group by r.title, r.writeDate, r.senderId,r.mailNo,r.mailstatus,r.my,rnum
+        order by mailNo desc) r1
+        where rnum between #{firstRow} and #{endRow}
+	</select>
+	
+	<!-- total delete 카운트 --> 
+    <select id="totaldeleteCount" resultType="int" parameterType="map">
+  	   select sum(cnt)
+          from (
+                select count(*) cnt
+                from deletereceive
+                where 1=0 
+                or receiverId = #{empNo}
+                 <if test="title!=null">and title like '%${title}%' </if> 
+                <if test="empName!=null">and empName like '%${empName}%'</if>
+                <if test="writeDate !=null">and writeDate like '%${writeDate}%'</if> 
+                 <if test="type == 0 ">and 1=1</if>
+                union all
+                select count(*) cnt
+                from deletecarbon
+                where 1=0
+                 or carbonId =#{empNo}
+                 <if test="title!=null">and title like '%${title}%' </if>
+                <if test="empName!=null">and empName like  '%${empName}%'</if>
+                <if test="writeDate !=null">and writeDate like '%${writeDate}%'</if>
+                <if test="type == 0 ">and 1=1</if>
+                 union all
+                  select count(*)
+                from send s, send2delete s2
+                where s.mailNum= s2.mailNum
+                and s.senderId=#{empNo}
+                <if test="title!=null">and title like concat('%',#{title},'%') </if>
+                <if test="empName!=null">and empName like concat('%',#{empName},'%')</if>
+                <if test="writeDate !=null">and writeDate like concat('%',#{writeDate},'%')</if>
+                union all
+                select count(*)
+                from send_mail s, emp e
+                where s.senderId = e.empNo 
+                and s.mailstatus ='7'
+                and s.senderId=#{empNo}
+                <if test="title!=null">and title like concat('%',#{title},'%') </if>
+                <if test="empName!=null">and empName like concat('%',#{empName},'%')</if>
+                <if test="writeDate !=null">and writeDate like concat('%',#{writeDate},'%')</if>
+                union all
+                 select count(*) cnt 
+                from draft d, draft2delete d2
+                where d.mailNum= d2.mailNum
+                and d.senderId=#{empNo}
+                <if test="title!=null">and title like '%${title}%' </if> 
+    			<if test="empName!=null">and empName like '%${empName}%'</if>
+    			<if test="writeDate !=null">and writeDate like '%${writeDate}%'</if> 
+    			<if test="type == 0 ">and 1=1</if>
+                union all
+                select count(*) cnt
+                from send_mail s, emp e
+                where s.senderId = e.empNo 
+                and s.mailstatus='8'
+                and s.senderId=#{empNo}
+                <if test="title!=null">and title like '%${title}%' </if>
+                <if test="empName!=null">and empName like  '%${empName}%'</if>
+                <if test="writeDate !=null">and writeDate like '%${writeDate}%'</if>
+            ) a
+
+    </select> 
+	
+	
+	
+	
+	  <!-- 휴지통 상세보여주기(보낸이) -->
+     <select id="selectdeleteInboxViewSend" parameterType="int" resultType="map">
+		select s.title, s.content, date_format(writeDate,"%Y-%m-%d %H:%i") as writeDate, s.senderId,s.mailNo,e.empName 
+               from send_mail s, emp e  
+                where s.senderId = e.empNo
+                and s.mailNo=#{mailNo}
+	</select>
+	
+	<!-- 휴지통 상세보여주기(받는이) -->
+	<select id="selectDeleteInboxViewReceive" parameterType="int" resultType="map">
+		select * 
+                from receive_mail r, emp e 
+                where r.receiverId = e.empNo 
+                and r.mailNo=#{mailNo} 
+	</select>
+	
+	<!-- 휴지통 상세보여주기(참조인) -->
+	<select id="selectDeleteInboxViewCarbon" parameterType="int" resultType="map">
+		select * 
+                from carbon_mail c, emp e 
+                where c.carbonId = e.empNo 
+                and c.mailNo=#{mailNo} 
+	</select>
+	
+	<!-- 휴지통 상세보여주기(임시저장함) -->
+<!-- 	<select id="selectDeleteInboxViewDraft" parameterType="int" resultType="map"> -->
+<!-- 		select * from draft_mail where mailNo=#{mailNo}  -->
+<!-- 	</select> -->
+	
+	<!-- 임시 저장함 받는이 받는이 상세보여주기-->
+     <select id="selectDeleteInboxViewDraftReceive" parameterType="int" resultType="map"> 
+		select * 
+                from draft_Mail_receive r, emp e 
+                where r.receiverId = e.empNo 
+                and r.mailNo=#{mailNo}
+ 		</select> 
+
+	<!-- 임시 저장함 잠조인 상세보여주기-->
+     <select id="selectDeleteInboxViewDraftCarbon" parameterType="int" resultType="map">
+		select * 
+                from draft_Mail_carbon c, emp e 
+                where c.carbonId = e.empNo 
+                and c.mailNo=#{mailNo}
+ 		</select>
+ 		
+	<!-- 메일 쓰기 -->
+	<insert id="insertSendMail" parameterType="map">
+		insert into 
+		send_mail (title,content,writeDate,mailstatus,senderId) 
+		values(<include refid="title"/>,#{content},now(),'1',#{senderId})
+	</insert>
+	
+	<!-- 받은사람 -->	
+	<insert id="insertReceiveMail" parameterType="map">
+		insert into receive_mail
+		(mailNo,receiverId,mailstatus,readstatus) 
+		values (#{mailNo},#{receiverId},'1',default)
+	</insert>
+	
+	<!-- 참조인 -->
+	<insert id="insertCarbonMail" parameterType="map">
+		insert into carbon_mail
+		(mailNo,carbonId,mailstatus,readstatus) 
+		values (#{mailNo},#{carbonId},'1',default)
+	</insert>
+	
+	<!-- 메일 내게 쓰기 -->
+	<insert id="insertMySendMail" parameterType="map">
+		insert into 
+		send_mail (title,content,writeDate,mailstatus,senderId) 
+		values(<include refid="title"/>,#{content},now(),'4',#{senderId})
+	</insert>
+	
+	<!-- 임시저장 내게쓰기 -->
+	<insert id="insertDraftMyMail" parameterType="map">
+		insert into 
+		send_mail (title,content,writeDate,mailstatus,senderId) 
+		values(<include refid="title"/>,#{content},now(),'5',#{senderId})
+	</insert>
+	
+	
+	<!-- 임시저장 -->
+	<insert id="insertDraftMail" parameterType="map">
+		insert into 
+		send_mail (title,content,writeDate,mailstatus,senderId) 
+		values(<include refid="title"/>,#{content},now(),'6',#{senderId})
+	</insert>
+	
+	<!-- 임시저장 받는이,참조인 -->
+<!-- 	<insert id="insertDraftMailReceive" parameterType="map"> -->
+<!-- 		insert into -->
+<!-- 		draft_mail_receive (mailNo,receiverId,carbonId,mailstatus)  -->
+<!-- 		values(#{mailNo},<include refid="receiverId"/>,#{carbonId},'6') -->
+<!-- 	</insert> -->
+	
+	<!-- 임시저장 받는이 -->
+	<insert id="insertDraftMailReceive" parameterType="map">
+		insert into
+		draft_mail_receive (mailNo,receiverId,mailstatus) 
+		values(#{mailNo},#{receiverId},'6')
+	</insert>
+	
+	<!-- 임시저장 참조인 -->
+	<insert id="insertDraftMailCarbon" parameterType="map">
+		insert into
+		draft_mail_carbon (mailNo,carbonId,mailstatus) 
+		values(#{mailNo},#{carbonId},'6')
+	</insert>
+	
+	<!-- 임시저장함 내게 저장된 메일 내게쓴 메일로 전송 -->
+	<update id="updateMyWrite" parameterType="map">
+		update send_mail
+			set title=<include refid="title"/>,
+			content=#{content},
+			writeDate=now(),
+			mailstatus='4'
+			where mailNo = #{mailNo}
+	</update>
+	
+	<!-- 임시저장함 내게 저장된 메일 재 저장 -->
+	<update id="updateMyWriteDraft" parameterType="map">
+		update send_mail
+			set title=<include refid="title"/>,
+			content=#{content},
+			writeDate=now(),
+			mailstatus='5'
+			where mailNo = #{mailNo}
+	</update>
+	
+	<!-- 보낸메일 mailNo 가져오기 -->
+	<select id = "getCurrentMailNo" resultType="int">
+		select mailNo
+		from send_mail
+		order by mailNo desc limit 1
+	</select>
+	
+	<!-- 임시저장 메일 전송 -->
+	<update id="updateDraftSendMail" parameterType="map">
+		update send_mail 
+		set title=<include refid="title"/>,
+		content=#{content},
+		writeDate=now(),
+		mailstatus='1'
+		where mailNo=#{mailNo} 
+	</update>
+	
+	<!-- 임시저장함에서 메일 전송(임시저장함 받는이 삭제) -->
+	<delete id="deleteDraftReceive" parameterType="int">
+		  delete from 
+		  draft_mail_receive
+		  where mailNo=#{mailNo}
+	</delete>
+	
+	<delete id="deleteDraftCarbon" parameterType="int">
+		  delete from 
+		  draft_mail_carbon
+		  where mailNo=#{mailNo}
+	</delete>
+	
+	<!-- 임시저장함에서 메일 전송(임시저장함 보낸이 삭제) -->
+	<delete id="deleteSednMail" parameterType="int">
+		  delete from 
+		  send_mail
+		  where mailNo=#{mailNo}
+	</delete>
+	
+	<!-- 임시저장함에서 메일 전송(파일 삭제) -->
+	<delete id="deleteFile" parameterType="int">
+		  delete from 
+		  uploadFromMail
+		  where mailNo=#{mailNo}
+	</delete>
+	
+	<!-- 임시저장함 메일 재 저장 -->
+	<update id="updateDraftMail" parameterType="Map">
+		update send_mail 
+		set title=<include refid="title"/>,
+		content=#{content},
+		writeDate=now(),
+		mailstatus='6'
+		where mailNo = #{mailNo}
+	</update>
+	
+	<!-- 임시저장 받는이,참조인 -->
+<!-- 	<update id="updateDraftMailReceive" parameterType="map"> -->
+<!-- 		update draft_mail  -->
+<!-- 		set receiverId=<include refid="receiverId"/>, -->
+<!-- 		carbonId=#{carbonId}, -->
+<!-- 		mailstatus='6'  -->
+<!-- 		where mailNo=#{mailNo} -->
+<!-- 	</update> -->
+
+	<!-- 임시저장 받는이-->
+	<update id="updateDraftMailReceive" parameterType="map">
+		update draft_Mail_receive 
+		set receiverId=#{receiverId},
+		mailstatus='6' 
+		where mailNo=#{mailNo}
+	</update>
+	
+	<!-- 임시저장 참조인 -->
+	<update id="updateDraftMailCarbon" parameterType="map">
+		update draft_Mail_carbon
+		carbonId=#{carbonId},
+		mailstatus='6' 
+		where mailNo=#{mailNo}
+	</update>
+
+	<!-- 보낸편지함 휴지통으로 보내기 -->
+	<update id="deleteMailSendInbox" parameterType="map"> 
+		update send_mail 
+		set mailstatus='2'
+		where mailNo=#{mailNo}
+	</update>
+	
+    <!-- 받은편지함 휴지통으로 보내기(받는이) -->
+	<update id="deleteMailReceiveInboxReceiver" parameterType="String"> 
+		update receive_mail 
+		set mailstatus='13' 
+		where mailNo = #{mailNo}
+	</update>	 
+
+	<!-- 받은편지함 휴지통으로 보내기(참조인) -->
+	<update id="deleteMailReceiveInboxCarbon" parameterType="String"> 
+		update carbon_mail 
+		set mailstatus='14' 
+		where mailNo = #{mailNo}
+	</update>
+	
+	<!-- 받은편지함 상세보기서 휴지통으로 보내기(받는이) -->
+	<update id="deleteMailReceiveInboxReceiverView" parameterType="Map"> 
+		update receive_mail 
+		set mailstatus='13' 
+		where mailNo = #{mailNo}
+	</update>
+	
+	<!-- 받은편지함 상세보기서 휴지통으로 보내기(참조인) -->
+	<update id="deleteMailReceiveInboxCarbonView" parameterType="Map"> 
+		update carbon_mail 
+		set mailstatus='14' 
+		where mailNo = #{mailNo}
+	</update>
+
+	<!-- 내게쓴 편지함 삭제 -->
+	<update id="deleteMyMailInbox" parameterType="map"> 
+		update send_mail
+		set mailstatus='7' 
+		where mailNo = #{mailNo}
+	</update> 
+	
+	<!-- 내게임시(휴지통)보내기-->
+	<update id="deleteDraftInboxMail" parameterType="String"> 
+		update send_mail 
+		set mailstatus='8' 
+		where mailNo =#{mailNo}
+	</update> 
+
+	<!-- 임시(휴지통)보낸이 보내기 -->
+	<update id="deleteDraftInboxMailSender" parameterType="String"> 
+		update send_mail 
+		set mailstatus='9' 
+		where mailNo=#{mailNo}
+	</update> 
+
+	<!-- 임시(휴지통)받는이,참조인 보내기 -->
+<!-- 	<update id="deleteDraftInboxMailDraft" parameterType="String">  -->
+<!-- 		update draft_mail  -->
+<!-- 		set mailstatus='9'  -->
+<!-- 		where mailNo =#{mailNo} -->
+<!-- 	</update> -->
+
+	<!-- 임시(휴지통)받는이 보내기 -->
+	<update id="deleteDraftInboxMailReceive" parameterType="String"> 
+		update draft_Mail_receive 
+		set mailstatus='9' 
+		where mailNo =#{mailNo}
+	</update>  
+	
+	
+	<!-- 임시(휴지통)참조인 보내기 -->
+	<update id="deleteDraftInboxMailCarbon" parameterType="String"> 
+		update draft_Mail_carbon 
+		set mailstatus='9' 
+		where mailNo =#{mailNo}
+	</update>  
+	
+	<!-- 보낸편지함 비우기 -->
+	<update id="emptyMailSendInbox" parameterType="String"> 
+		update send_mail 
+		set mailstatus='3'
+		where mailNo=#{mailNo}
+	</update>
+	
+    <!-- 받은편지함 비우기(받는이) -->
+	<update id="emptyMailReceiveInboxReceiver" parameterType="String"> 
+		update receive_mail 
+		set mailstatus='3' 
+		where mailNo = #{mailNo}
+	</update>	 
+
+	<!-- 받은편지함 비우기(참조인) -->
+	<update id="emptyMailReceiveInboxCarbon" parameterType="String"> 
+		update carbon_mail 
+		set mailstatus='3' 
+		where mailNo = #{mailNo}
+	</update>
+	
+	<!-- 내게쓴 편지함 비우기 -->
+	<update id="emptyMyMailInbox" parameterType="String"> 
+		update send_mail
+		set mailstatus='10' 
+		where mailNo = #{mailNo}
+	</update> 
+	
+	<!-- 내게임시 비우기-->
+	<update id="emptyDraftInboxMail" parameterType="String"> 
+		update send_mail 
+		set mailstatus='11' 
+		where mailNo =#{mailNo}
+	</update> 
+
+	<!-- 임시 보낸이 비우기-->
+	<update id="emptyDraftInboxMailSender" parameterType="String"> 
+		update send_mail 
+		set mailstatus='12' 
+		where mailNo=#{mailNo}
+	</update> 
+
+	<!-- 임시 받는이,참조인 비우기 -->
+<!-- 	<update id="emptyDraftInboxMailDraft" parameterType="String">  -->
+<!-- 		update draft_mail  -->
+<!-- 		set mailstatus='12'  -->
+<!-- 		where mailNo =#{mailNo} -->
+<!-- 	</update> -->
+
+	<!-- 임시 받는이 비우기-->
+	<update id="emptyDraftInboxMailReceive" parameterType="String"> 
+		update draft_Mail_receive 
+		set mailstatus='12' 
+		where mailNo =#{mailNo}
+	</update>
+	
+	<!-- 임시 참조인 비우기-->
+	<update id="emptyDraftInboxMailCarbon" parameterType="String"> 
+		update draft_Mail_carbon 
+		set mailstatus='12' 
+		where mailNo =#{mailNo}
+	</update>  
+
+	
+	<!-- 보낸편지함 상세보기 비우기 -->
+	<update id="emptyMailSendInboxView" parameterType="Map"> 
+		update send_mail 
+		set mailstatus='3'
+		where mailNo=#{mailNo}
+	</update>
+	
+    <!-- 받은편지함 상세보기 비우기(받는이) -->
+	<update id="emptyMailReceiveInboxReceiverView" parameterType="Map"> 
+		update receive_mail 
+		set mailstatus='3' 
+		where mailNo = #{mailNo}
+	</update>	 
+
+	<!-- 받은편지함  비우기(참조인) -->
+	<update id="emptyMailReceiveInboxCarbonView" parameterType="Map"> 
+		update carbon_mail 
+		set mailstatus='3' 
+		where mailNo = #{mailNo}
+	</update>
+	
+	<!-- 내게쓴 편지함 상세보기 비우기 -->
+	<update id="emptyMyMailInboxView" parameterType="Map"> 
+		update send_mail
+		set mailstatus='10' 
+		where mailNo = #{mailNo}
+	</update> 
+	
+	<!-- 내게임시 상세보기 비우기-->
+	<update id="emptyDraftInboxMailView" parameterType="Map"> 
+		update send_mail 
+		set mailstatus='11' 
+		where mailNo =#{mailNo}
+	</update> 
+
+	<!-- 임시 보낸이 상세보기 비우기-->
+	<update id="emptyDraftInboxMailSenderView" parameterType="Map"> 
+		update send_mail 
+		set mailstatus='12' 
+		where mailNo=#{mailNo}
+	</update> 
+
+	<!-- 임시 받는이,참조인 상세보기 비우기 -->
+	<update id="emptyDraftInboxMailDraftReceiveView" parameterType="Map"> 
+		update draft_Mail_receive 
+		set mailstatus='12' 
+		where mailNo =#{mailNo}
+	</update>
+	
+	<!-- 임시 받는이,참조인 상세보기 비우기 -->
+	<update id="emptyDraftInboxMailDraftCarbonView" parameterType="Map"> 
+		update draft_Mail_carbon 
+		set mailstatus='12' 
+		where mailNo =#{mailNo}
+	</update>
+	
+	
+	<!-- 메일 읽음 표시(받는이) --> 
+	<update id="updateReadmailReceiver" parameterType="Map">
+		update receive_mail
+		set readstatus='Y'
+		where mailNo = #{mailNo} 
+	</update>
+	
+	<!-- 메일 읽음 표시(참조인) --> 
+	<update id="updateReadmailCarbon" parameterType="Map">
+		update carbon_mail
+		set readstatus='Y'
+		where mailNo = #{mailNo}
+	</update>
+	
+	<!-- 메일 회수(보낸이) -->
+	<delete id="returnMailSend" parameterType="int">
+		 delete from send_mail where mailNo= #{mailNo}
+	
+	</delete>
+	
+	<!-- 메일 회수(받는이) -->
+	<delete id="returnMailReceive" parameterType="int">
+		 delete from receive_mail where mailNo= #{mailNo}
+	</delete>
+	
+	<!-- 메일 회수(참조인) -->
+	<delete id="returnMailCarbon" parameterType="int">
+		 delete from carbon_mail where mailNo= #{mailNo}
+	</delete>
+	
+	
+	<!-- 파일 업로드 후 파일 이름 저장 -->
+	<insert id="insertuploadFromMail" parameterType="map">
+		insert into uploadFromMail (fileName,mailNo)
+		  values (#{fileName},#{mailNo})
+	</insert>
+	
+	<sql id="title">
+		<choose>
+			<when test="title != ''">
+				#{title}
+			</when>
+			<otherwise>
+				'제목없음'
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<sql id="receiverId">
+		<choose>
+			<when test="receiverId != ''">
+				#{receiverId}
+			</when>
+			<otherwise>
+				'받는이없음'
+			</otherwise>
+		</choose>
+	</sql>
+	
+
+
+</mapper>

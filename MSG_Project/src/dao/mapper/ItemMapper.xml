@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dao.ItemDao">
+
+	<select id="getFileName" parameterType="String"
+		resultType="String">
+		
+		select typeName from item where typeName = #{typeName}
+	</select>
+	
+
+	<select id="mainselectAll" resultType="map">
+		
+	select typeName,listName from item;
+	
+	</select>
+
+
+	<select id="selectAll" resultType="map">
+
+		select * from item;
+
+	</select>
+
+	<select id="selectCount" resultType="int" parameterType="map">
+
+		select
+		count(*) from item
+
+	</select>
+
+	<select id="itemsAll" resultType="map">
+
+		select *
+		from car c , emp e
+		where e.empNo = c.assigned
+		union		
+		select *
+		from room r , emp e
+		where
+		e.empNo = r.assigned
+
+	</select>
+	
+	
+
+
+
+
+	<insert id="insertitem" parameterType="map">
+
+		insert into item(itemNo,itemImg,typeName,status,listName)
+		values(#{itemNo},#{itemImg},#{typeName},1,#{listName})
+
+	</insert>
+
+
+
+	<update id="updateitem" parameterType="map">
+
+		update item
+		set itemImg =
+		#{itemImg}
+		typeName = #{typeName}
+		where itemNo = #{itemNo}
+
+	</update>
+
+
+
+	 <update id="updateitemstatus" parameterType="map">
+	
+		update item
+		set status =  0
+		where itemNo = #{itemNo} and typeName=#{typeName}
+	
+	</update> 
+	
+
+
+	<insert id="insertuploaditem" parameterType="map">
+		insert into
+		uploadFromItem (fileName,typeName)
+		values(#{FULLNAME},#{typeName})
+	</insert>
+
+
+	<select id="totalItemCount" resultType="int" parameterType="map">
+		select count(*)
+		from item
+		where 1=0
+		<if test="itemNo != null"> or itemNo like concat('%',#{itemNo},'%')</if>
+		<if test="typeName != null"> or typeName like concat('%',#{typeName},'%')</if>
+		<if test="type == 0 "> or 1=1</if>
+
+	</select>
+
+	<select id="searchItem" resultType="map" parameterType="map">
+
+		select b1.*
+		from( select *,@rownum:=@rownum+1 as rnum
+			  from item,(select @rownum:=0)r
+			  where 1 = 0
+				<if test="itemNo != null"> or itemNo like concat('%',#{itemNo},'%')</if>
+				<if test="typeName != null"> or typeName like concat('%',#{typeName},'%')</if>
+				<if test="type == 0 "> or 1=1</if> and status = 1
+				order by itemNo desc)b1
+				
+		where rnum between #{firstRow} and #{endRow};
+		
+
+	</select>
+
+
+
+</mapper>

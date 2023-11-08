@@ -1,0 +1,26 @@
+/* 캘린더 css */
+body {
+	padding: 0;
+	font-family: 'Nanum Gothic', sans-serif;
+	font-size: 14px;
+}
+
+#calendar {
+	padding-left: 150px;
+	max-width: 750px;
+	margin: 0 auto;
+	margin-top: 30px;
+	padding-top: 35px;
+	background-color: white;
+}
+
+.fc-sun {
+	color: #e31b23
+}
+
+.fc-sat {
+	color: #007dc3
+}
+#main_lnb img {
+	position: absolute;
+}

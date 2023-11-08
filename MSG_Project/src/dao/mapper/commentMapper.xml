@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dao.CommentDao">
+
+   <!--////////////////////////////////// notice 댓글 //////////////////////////////////////////////-->
+   
+   <insert id="insertComment" parameterType="map">
+      insert into commentFromNoticeB (boardNo,content,writer,writeDate)
+        values(#{boardNo},
+               #{content},
+               #{writer},
+               current_timestamp)
+   </insert>
+   
+   <update id="updateComment" parameterType="map">
+      update commentFromNoticeB
+         set  content = #{content}
+       where  cmtNo = #{cmtNo}
+   </update>
+   
+   <delete id="deleteComment" parameterType="int">
+      delete from commentFromNoticeB where cmtNo=#{CMTNO}
+   </delete>
+   
+   <select id="selectOne" parameterType="int" resultType="map">
+      select * from commentFromNoticeB where cmtNo = #{cmtNo}
+   </select>
+   
+   <select id="selectByBoardNo" parameterType="int" resultType="map">
+      select c.*,e.* 
+      from commentFromNoticeB c left join emp e on c.writer = e.empno
+      where boardNo = #{boardNo}
+   </select>
+   
+   <select id="getCount" parameterType="int" resultType="int">
+      select count(*)
+        from commentFromNoticeB
+       where boardNo = #{boardNo}
+   </select>
+   <!--////////////////////////////////// event 댓글 //////////////////////////////////////////////-->
+   <insert id="insertCommentEvent" parameterType="map">
+      insert into commentFromEventB (boardNo,content,writer,writeDate)
+        values(#{boardNo},
+               #{content},
+               #{writer},
+               current_timestamp)
+   </insert>
+   
+   <update id="updateCommentEvent" parameterType="map">
+      update commentFromEventB
+         set  content = #{content}
+       where  cmtNo = #{cmtNo}
+   </update>
+   
+   <delete id="deleteCommentEvent" parameterType="int">
+      delete from commentFromEventB where cmtNo=#{CMTNO}
+   </delete>
+   
+   <select id="selectOneEvent" parameterType="int" resultType="map">
+      select * from commentFromEventB where cmtNo = #{cmtNo}
+   </select>
+   
+   <select id="selectByBoardNoEvent" parameterType="int" resultType="map">
+      select c.*,e.* 
+      from commentFromEventB c left join emp e on c.writer = e.empno
+      where boardNo = #{boardNo}
+   </select>
+   
+   <select id="getCountEvent" parameterType="int" resultType="int">
+      select count(*)
+        from commentFromEventB
+       where boardNo = #{boardNo}
+   </select>
+   <!--////////////////////////////////// it 댓글 //////////////////////////////////////////////-->
+   <insert id="insertCommentIt" parameterType="map">
+      insert into commentFromDeptItB (boardNo,content,writer,writeDate)
+        values(#{boardNo},
+               #{content},
+               #{writer},
+               current_timestamp)
+   </insert>
+   
+   <update id="updateCommentIt" parameterType="map">
+      update commentFromDeptItB
+         set  content = #{content}
+       where  cmtNo = #{cmtNo}
+   </update>
+   
+   <delete id="deleteCommentIt" parameterType="int">
+      delete from commentFromDeptItB where cmtNo=#{CMTNO}
+   </delete>
+   
+   <select id="selectOneIt" parameterType="int" resultType="map">
+      select * from commentFromDeptItB where cmtNo = #{cmtNo}
+   </select>
+   
+   <select id="selectByBoardNoIt" parameterType="int" resultType="map">
+      select c.*,e.* 
+      from commentFromDeptItB c left join emp e on c.writer = e.empno
+      where boardNo = #{boardNo}
+   </select>
+   
+   <select id="getCountIt" parameterType="int" resultType="int">
+      select count(*)
+        from commentFromDeptItB
+       where boardNo = #{boardNo}
+   </select>
+   <!--////////////////////////////////// min 댓글 //////////////////////////////////////////////-->
+   <insert id="insertCommentMin" parameterType="map">
+      insert into commentFromDeptMinB (boardNo,content,writer,writeDate)
+        values(#{boardNo},
+               #{content},
+               #{writer},
+               current_timestamp)
+   </insert>
+   
+   <update id="updateCommentMin" parameterType="map">
+      update commentFromDeptMinB
+         set  content = #{content}
+       where  cmtNo = #{cmtNo}
+   </update>
+   
+   <delete id="deleteCommentMin" parameterType="int">
+      delete from commentFromDeptMinB where cmtNo=#{CMTNO}
+   </delete>
+   
+   <select id="selectOneMin" parameterType="int" resultType="map">
+      select * from commentFromDeptMinB where cmtNo = #{cmtNo}
+   </select>
+   
+   <select id="selectByBoardNoMin" parameterType="int" resultType="map">
+      select c.*,e.* 
+      from commentFromDeptMinB c left join emp e on c.writer = e.empno
+      where boardNo = #{boardNo}
+   </select>
+   
+   <select id="getCountMin" parameterType="int" resultType="int">
+      select count(*)
+        from commentFromDeptMinB
+       where boardNo = #{boardNo}
+   </select>
+   <!--////////////////////////////////// bp 댓글 //////////////////////////////////////////////-->
+   <insert id="insertCommentBp" parameterType="map">
+      insert into commentFromDeptBpB (boardNo,content,writer,writeDate)
+        values(#{boardNo},
+               #{content},
+               #{writer},
+               current_timestamp)
+   </insert>
+   
+   <update id="updateCommentBp" parameterType="map">
+      update commentFromDeptBpB
+         set  content = #{content}
+       where  cmtNo = #{cmtNo}
+   </update>
+   
+   <delete id="deleteCommentBp" parameterType="int">
+      delete from commentFromDeptBpB where cmtNo=#{CMTNO}
+   </delete>
+   
+   <select id="selectOneBp" parameterType="int" resultType="map">
+      select * from commentFromDeptBpB where cmtNo = #{cmtNo}
+   </select>
+   
+   <select id="selectByBoardNoBp" parameterType="int" resultType="map">
+      select c.*,e.* 
+      from commentFromDeptBpB c left join emp e on c.writer = e.empno
+      where boardNo = #{boardNo}
+   </select>
+   
+   <select id="getCountBp" parameterType="int" resultType="int">
+      select count(*)
+        from commentFromDeptBpB
+       where boardNo = #{boardNo}
+   </select>
+   <!--////////////////////////////////// sales 댓글 //////////////////////////////////////////////-->
+   <insert id="insertCommentSales" parameterType="map">
+      insert into commentFromDeptSalesB (boardNo,content,writer,writeDate)
+        values(#{boardNo},
+               #{content},
+               #{writer},
+               current_timestamp)
+   </insert>
+   
+   <update id="updateCommentSales" parameterType="map">
+      update commentFromDeptSalesB
+         set  content = #{content}
+       where  cmtNo = #{cmtNo}
+   </update>
+   
+   <delete id="deleteCommentSales" parameterType="int">
+      delete from commentFromDeptSalesB where cmtNo=#{CMTNO}
+   </delete>
+   
+   <select id="selectOneSales" parameterType="int" resultType="map">
+      select * from commentFromDeptSalesB where cmtNo = #{cmtNo}
+   </select>
+   
+   <select id="selectByBoardNoSales" parameterType="int" resultType="map">
+      select c.*,e.* 
+      from commentFromDeptSalesB c left join emp e on c.writer = e.empno
+      where boardNo = #{boardNo}
+   </select>
+   
+   <select id="getCountSales" parameterType="int" resultType="int">
+      select count(*)
+        from commentfromdeptSalesb
+       where boardNo = #{boardNo}
+   </select>
+   <!--////////////////////////////////// anonymity 댓글 //////////////////////////////////////////////-->
+   <insert id="insertCommentAnonymity" parameterType="map">
+      insert into commentFromAnonymityB (boardNo,content,writer,writeDate)
+        values(#{boardNo},
+               #{content},
+               #{writer},
+               current_timestamp)
+   </insert>
+   
+   <update id="updateCommentAnonymity" parameterType="map">
+      update commentFromAnonymityB
+         set  content = #{content}
+       where  cmtNo = #{cmtNo}
+   </update>
+   
+   <delete id="deleteCommentAnonymity" parameterType="int">
+      delete from commentFromAnonymityB where cmtNo=#{CMTNO}
+   </delete>
+   
+   <select id="selectOneAnonymity" parameterType="int" resultType="map">
+      select * from commentFromAnonymityB where cmtNo = #{cmtNo}
+   </select>
+   
+   <select id="selectByBoardNoAnonymity" parameterType="int" resultType="map">
+      select * from commentFromAnonymityB
+      where boardNo = #{boardNo}
+   </select>
+   
+   <select id="getCountAnonymity" parameterType="int" resultType="int">
+      select count(*)
+        from commentFromAnonymityB
+       where boardNo = #{boardNo}
+   </select>
+   <!--////////////////////////////////// project 댓글 //////////////////////////////////////////////-->
+   <insert id="insertCommentProjectOngoing" parameterType="map">
+      insert into commentFromProjectB (boardNo,content,writer,writeDate)
+        values(#{boardNo},
+               #{content},
+               #{writer},
+               current_timestamp)
+   </insert>
+   
+   <update id="updateCommentProjectOngoing" parameterType="map">
+      update commentFromProjectB
+         set  content = #{content}
+       where  cmtNo = #{cmtNo}
+   </update>
+   
+   <delete id="deleteProjectOngoing" parameterType="int">
+      delete from commentFromProjectB where cmtNo=#{CMTNO}
+   </delete>
+   
+   <select id="selectOneProjectOngoing" parameterType="int" resultType="map">
+      select * from commentFromProjectB where cmtNo = #{cmtNo}
+   </select>
+   
+   <select id="selectByBoardNoProjectOngoing" parameterType="int" resultType="map">
+      select c.*,e.* 
+      from commentFromProjectB c left join emp e on c.writer = e.empno
+      where boardNo = #{boardNo}
+   </select>
+   
+   <select id="getCountProjectOngoing" parameterType="int" resultType="int">
+      select count(*)
+        from commentFromProjectB
+       where boardNo = #{boardNo}
+   </select>
+</mapper>

@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dao.MessageDao">
+   <!-- 쪽지 생성 -->   
+   <insert id="insertMessage" parameterType="map">
+      INSERT INTO message
+      VALUES (NULL, #{msgTitle}, #{msgContent}, #{senderID}, NOW())
+       <selectKey resultType="int" keyProperty="msgNo" order="AFTER">
+           SELECT LAST_INSERT_ID()
+       </selectKey>
+   </insert>
+   <!-- 보낸 쪽지 생성 -->
+   <insert id="message_send" parameterType="map">
+      INSERT INTO message_send
+               (msgNo, senderID)
+      VALUES (#{msgNo}, #{senderID})
+   </insert>
+   <!-- 받은 쪽지 생성 -->
+   <insert id="message_receive" parameterType="map">
+      INSERT INTO message_receive
+               (msgNo, receiverID)
+      VALUES (#{msgNo}, #{receiverID})
+   </insert>
+   <!-- 로그인 유저 대상 쪽지함 -->
+   <select id="selectMessageByID" parameterType="string" resultType="map">
+      SELECT *
+        FROM MSG_LIST_VIEW
+       WHERE receiverID = #{EMPNO}
+          OR senderID   = #{EMPNO}
+   </select>
+   <!-- 아래의 2개를 합쳐서 '읽은사람 수/전체 받은 사람 수' 형식으로 표시  -->
+   
+   <!-- 보낸 쪽지함에서 몇명에게 보냈는지 보여 줄 때 사용 -->
+   <select id="message_receive_count" parameterType="int" resultType="int">
+      SELECT *
+        FROM msg_receive_num
+       WHERE msgNo = #{MSGNO}
+   </select>
+   
+   
+   
+   
+   <!-- 보낸 쪽지함에서 읽은 숫자 보여 줄 때 사용 -->
+   <select id="message_read_count" parameterType="int" resultType="int">
+      SELECT * 
+        FROM msg_read_num
+       WHERE MSGNO = #{MSGNO}
+   </select>
+   
+   
+   
+   
+   <!-- 보낸 쪽지함 삭제 -->   
+   <update id="message_send_delete" parameterType="map">
+      UPDATE message_send
+         SET state = 0
+       WHERE MSGNO = #{MSGNO}
+         AND SENDERID = #{SENDERID}
+   </update>
+   <!-- 받은 쪽지함 삭제 -->   
+   <update id="message_receive_delete" parameterType="map">
+      UPDATE message_receive
+         SET state = 0,
+             readState = 0
+       WHERE msgNo = #{MSGNO}
+         AND receiverID = #{RECEIVERID}
+   </update>
+   <!-- 조회했을 경우 읽음처리 -->   
+   <update id="readState" parameterType="map">
+      UPDATE message_receive
+         SET readState = 0
+       WHERE msgNo = #{msgNo}
+         AND receiverID = #{receiverID}
+   </update>
+   <!-- 안읽은 쪽지 개수 표시 -->
+   <select id="selectNonReadMessageCount" parameterType="string" resultType="int">
+      SELECT COUNT(*)
+        FROM message_receive
+       WHERE readState = 1
+         AND receiverID = #{empNo};
+   </select>   
+   <!-- 쪽지 클릭 시 사용 -->
+   <select id="selectMessage" parameterType="int" resultType="map">
+      SELECT *
+        FROM message
+       WHERE msgNo = #{MSGNO}
+   </select>
+   
+   <!-- 받은 쪽지 검색 시 개수 알려줌! -->
+   <select id="receive_totalCount_byTitle" parameterType="map" resultType="int">
+      SELECT COUNT(*)
+        FROM MSG_LIST_VIEW
+        WHERE receiverID = #{empNo}
+          AND receiverState = 1
+            AND msgTitle like CONCAT('%',#{keyword},'%')
+   </select>
+   <select id="receive_totalCount_byContent" parameterType="map" resultType="int">
+      SELECT COUNT(*)
+        FROM MSG_LIST_VIEW
+        WHERE receiverID = #{empNo}
+          AND receiverState = 1
+            AND msgContent like CONCAT('%',#{keyword},'%')
+   </select>
+   <select id="receive_totalCount_byName" parameterType="map" resultType="int">
+      SELECT COUNT(*)
+        FROM MSG_LIST_VIEW
+        WHERE receiverID = #{empNo}
+          AND receiverState = 1
+            AND senderName like CONCAT('%',#{keyword},'%')
+   </select>
+   <select id="receive_totalCount_byTitleorContent" parameterType="map" resultType="int">
+      SELECT COUNT(*)
+        FROM MSG_LIST_VIEW
+        WHERE receiverID = #{empNo}
+          AND receiverState = 1
+         AND (msgTitle like CONCAT('%',#{keyword},'%') 
+          OR  msgContent like CONCAT('%',#{keyword},'%'))
+   </select>
+
+   <!-- 보낸 쪽지 검색 시 개수 알려줌! -->
+   <select id="send_totalCount_byTitle" parameterType="map" resultType="int">
+      SELECT COUNT(*)
+        FROM MSG_LIST_VIEW
+        WHERE senderID = #{empNo}
+          AND senderState = 1
+            AND msgTitle like CONCAT('%',#{keyword},'%')
+   </select>
+   <select id="send_totalCount_byContent" parameterType="map" resultType="int">
+      SELECT COUNT(*)
+        FROM MSG_LIST_VIEW
+        WHERE senderID = #{empNo}
+          AND senderState = 1
+            AND msgContent like CONCAT('%',#{keyword},'%')
+   </select>
+   <select id="send_totalCount_byName" parameterType="map" resultType="int">
+      SELECT COUNT(*)
+        FROM MSG_LIST_VIEW
+        WHERE senderID = #{empNo}
+          AND senderState = 1
+            AND receiverName like CONCAT('%',#{keyword},'%')
+   </select>
+   <select id="send_totalCount_byTitleorContent" parameterType="map" resultType="int">
+      SELECT COUNT(*)
+        FROM MSG_LIST_VIEW
+        WHERE senderID = #{empNo}
+          AND senderState = 1
+         AND (msgTitle like CONCAT('%',#{keyword},'%') 
+          OR  msgContent like CONCAT('%',#{keyword},'%'))
+   </select>
+
+   <!-- 받은 쪽지함 제목 검색 -->
+   <select id="searchMessages_receive_byTitle" parameterType="map" resultType="map">
+      SELECT list.*, DATE_FORMAT(list.writeDate, '%y-%m-%d %H:%i') as wDate
+        FROM (SELECT @ROWNUM:= @ROWNUM+1 AS ROWNUM,
+              MSG_LIST_VIEW.*
+              FROM MSG_LIST_VIEW, (SELECT @ROWNUM:=0)R
+             WHERE receiverID = #{empNo}
+             AND receiverState = 1
+               AND msgTitle like CONCAT('%',#{keyword},'%')
+             ORDER BY msgNo desc
+             )list
+       WHERE ROWNUM between #{firstRow} and #{endRow}
+   </select>
+   <!-- 받은 쪽지함 내용 검색 -->
+   <select id="searchMessages_receive_byContent" parameterType="map" resultType="map">
+      SELECT list.*, DATE_FORMAT(list.writeDate, '%y-%m-%d %H:%i') as wDate
+        FROM (SELECT @ROWNUM:= @ROWNUM+1 AS ROWNUM,
+              MSG_LIST_VIEW.*
+              FROM MSG_LIST_VIEW, (SELECT @ROWNUM:=0)R
+             WHERE receiverID = #{empNo}
+             AND receiverState = 1
+               AND msgContent like CONCAT('%',#{keyword},'%')
+               ORDER BY msgNo desc
+             )list
+       WHERE ROWNUM between #{firstRow} and #{endRow}
+   </select>
+   <!-- 받은 쪽지함 이름 검색 -->
+   <select id="searchMessages_receive_byName" parameterType="map" resultType="map">
+      SELECT list.*, DATE_FORMAT(list.writeDate, '%y-%m-%d %H:%i') as wDate
+        FROM (SELECT @ROWNUM:= @ROWNUM+1 AS ROWNUM,
+              MSG_LIST_VIEW.*
+              FROM MSG_LIST_VIEW, (SELECT @ROWNUM:=0)R
+             WHERE receiverID = #{empNo}
+             AND receiverState = 1
+               AND senderName like CONCAT('%',#{keyword},'%')
+               ORDER BY msgNo desc
+             )list
+       WHERE ROWNUM between #{firstRow} and #{endRow}
+   </select>   
+   <!-- 받은 쪽지함 제목+내용 검색 -->
+   <select id="searchMessages_receive_byTitleOrContent" parameterType="map" resultType="map">
+      SELECT list.*, DATE_FORMAT(list.writeDate, '%y-%m-%d %H:%i') as wDate
+        FROM (SELECT @ROWNUM:= @ROWNUM+1 AS ROWNUM,
+              MSG_LIST_VIEW.*
+              FROM MSG_LIST_VIEW, (SELECT @ROWNUM:=0)R
+             WHERE receiverID = #{empNo}
+             AND receiverState = 1
+             AND (msgTitle like CONCAT('%',#{keyword},'%') 
+             OR  msgContent like CONCAT('%',#{keyword},'%'))
+             ORDER BY msgNo desc
+             )list
+       WHERE ROWNUM between #{firstRow} and #{endRow}   
+   </select>      
+   <!-- 보낸 쪽지함 제목 검색 -->
+   <select id="searchMessages_send_byTitle" parameterType="map" resultType="map">
+      SELECT list.*, DATE_FORMAT(list.writeDate, '%y-%m-%d %H:%i') as wDate
+        FROM (SELECT @ROWNUM:= @ROWNUM+1 AS ROWNUM,
+              MSG_LIST_VIEW.*
+              FROM MSG_LIST_VIEW, (SELECT @ROWNUM:=0)R
+             WHERE senderID = #{empNo}
+               AND senderState = 1
+             AND msgTitle like CONCAT('%',#{keyword},'%')
+             ORDER BY msgNo desc
+             )list
+       WHERE ROWNUM between #{firstRow} and #{endRow}
+   </select>   
+   <!-- 보낸 쪽지함 내용 검색 -->
+   <select id="searchMessages_send_byContent" parameterType="map" resultType="map">
+      SELECT list.*, DATE_FORMAT(list.writeDate, '%y-%m-%d %H:%i') as wDate
+        FROM (SELECT @ROWNUM:= @ROWNUM+1 AS ROWNUM,
+              MSG_LIST_VIEW.*
+              FROM MSG_LIST_VIEW, (SELECT @ROWNUM:=0)R
+             WHERE senderID = #{empNo}
+               AND senderState = 1
+               AND msgContent like CONCAT('%',#{keyword},'%')
+               ORDER BY msgNo desc
+             )list
+       WHERE ROWNUM between #{firstRow} and #{endRow}
+   </select>
+   <!-- 보낸 쪽지함 이름 검색 -->
+   <select id="searchMessages_send_byName" parameterType="map" resultType="map">
+      SELECT list.*, DATE_FORMAT(list.writeDate, '%y-%m-%d %H:%i') as wDate
+        FROM (SELECT @ROWNUM:= @ROWNUM+1 AS ROWNUM,
+              MSG_LIST_VIEW.*
+              FROM MSG_LIST_VIEW, (SELECT @ROWNUM:=0)R
+             WHERE senderID = #{empNo}
+             AND senderState = 1
+             AND receiverName like CONCAT('%',#{keyword},'%')
+             ORDER BY msgNo desc
+             )list
+       WHERE ROWNUM between #{firstRow} and #{endRow}   
+   </select>   
+   <!-- 보낸 쪽지함 제목+내용 검색 -->
+   <select id="searchMessages_send_byTitleOrContent" parameterType="map" resultType="map">
+      SELECT list.*, DATE_FORMAT(list.writeDate, '%y-%m-%d %H:%i') as wDate
+        FROM (SELECT @ROWNUM:= @ROWNUM+1 AS ROWNUM,
+              MSG_LIST_VIEW.*
+              FROM MSG_LIST_VIEW, (SELECT @ROWNUM:=0)R
+             WHERE senderID = #{empNo}
+             AND senderState = 1
+             AND (msgTitle like CONCAT('%',#{keyword},'%') 
+             OR  msgContent like CONCAT('%',#{keyword},'%'))
+             ORDER BY msgNo desc
+             )list
+       WHERE ROWNUM between #{firstRow} and #{endRow}
+   </select>
+</mapper>

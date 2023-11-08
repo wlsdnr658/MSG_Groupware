@@ -1,0 +1,329 @@
+@charset "UTF-8";
+/*전체*/
+html{
+	background-color:whitesmoke;
+	overflow: hidden;
+}
+/*기본 폰트*/
+body{
+	font-family: sans-serif;
+	min-width: 350px;
+	min-height: 350px;
+	font-family: 'Nanum Gothic', sans-serif;
+}
+/*전체를 감싸는 래퍼*/
+#chat-wrap{
+	width: 100%;
+	height: 360px;
+}
+.chat_profile{
+	width: 38px;
+	height: 38px;
+	border-radius: 12px;
+	vertical-align: top;
+}
+
+/*채팅필드*/
+#chatField{
+	position: relative;
+	width: 100%;
+	min-height: 310px;
+	border-collapse: collapse;
+	font-size: 12px;
+	line-height: 24px;
+	text-align: center;
+	border: 1px solid gray;
+	overflow: hidden;
+	border-radius: 5px;
+}
+#mask {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 900;
+	background-color: silver;
+	opacity: 0.7;
+	display: none;
+}
+#chatInvite{
+	position : absolute;
+	top: 50px;
+	width : 80%;
+	background-color : #F6F6F6;
+	display : inline-block;
+	padding : 10px;
+	z-index : 1000;
+	border : 1px solid lightgray;
+}
+#inviteTable, #inviteList{
+	width: 95%;
+	max-height: 200px;
+	border: 1px solid black;
+	overflow: auto;
+}
+#inviteTable tr td{
+	text-align: center;
+	font-size: 11px;
+}
+#inviteTable tr th{
+	text-align: center;
+	font-size: 11px;
+}
+.invite_btn{
+	border: 0.5px solid black;
+	
+}
+#inviteOption{
+	padding-bottom: 5px;
+	margin-bottom: 5px;
+}
+/*파일 첨부창 크기*/
+#fileField{
+	position: relative;
+	width: 70%;
+	height: 20%;
+}
+/*채팅 입력 div 전체 크기*/
+#sendField{
+	position: relative;
+	width: 100%;
+	min-height: 40px;
+	margin: 0px;
+	padding: 0px;
+	background-color: white;
+	border-left: 1px solid gray;
+	border-right: 1px solid gray;
+	border-bottom: 1px solid gray;
+}
+/*채팅 입력 textarea 크기*/
+#textBox{
+	width: 78%;
+	height: auto;
+	min-height: 85px;
+	border: none;
+	padding: 3px;
+	display: inline-block;
+}
+/*채팅 입력 버튼 크기*/
+#btn_send{
+	float: right;
+	display: inline-block;
+	width: 15%;
+	min-width: 40px;
+	height: 30px;
+	margin: 10px;
+	border: 1px solid gray;
+	background-color : whitesmoke;
+	border-radius: 3px;
+	cursor: pointer;
+}
+#file_input_btn{
+	float: right;
+	display: inline-block;
+	width: 28px;
+	height: 28px;
+	margin: 5px;
+	margin-right: 15px;
+	cursor: pointer;
+}
+#buttonSet{
+	width: 19%;
+	height: 96px;
+	display: inline-block;
+}
+button{
+	border: 0.5px solid gray;
+	background-color: white;
+	float: right;
+	margin: 0px;
+	margin-right: 5px;
+	padding-left: 2px;
+	padding-right: 2px;
+	display: inline-block;
+	border-bottom: none;
+}
+#chat-noticeUpdate, #chat-noticeCancle, #chat-titleUpdate, #chat-titleCancle{
+	border: 0.5px solid gray;
+	background-color: white;
+	margin: 5px;
+	padding-left: 2px;
+	padding-right: 2px;
+	display: inline-block;
+	float: none;
+}
+#num-emp{
+	font-size: 13px;
+	color: darkred;
+}
+#room-title{
+	display: inline-block;
+	border: 0.5px solid gray;
+	font-size: 12px;
+	margin: 0px;
+	margin-right: 5px;
+	width: 250px;
+	height: 22px;
+	padding: 3px;
+	padding-top: 6px;
+	padding-bottom: 0px;
+	border-bottom: none;
+}
+#btn-chatRoomMenu{
+	right: 7px;
+	height: 29px;
+	width: 30px;
+}
+.chatDiv{
+	line-height: 100%;
+	text-align: left;
+	padding: 5px;
+}
+.chatSpan_A{
+	display: block !important;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+.chatSpan_B{
+	font-size: 12px;
+	display: inline-block !important;
+}
+.chatSendName{
+	font-size:12px;
+ 	line-height:120%;
+ 	display:inline-block;
+}
+.chatContent{
+	display:inline-block;
+	border: 0.5px solid silver;
+	border-radius:5px;
+	padding:5px;
+	margin: 3px;
+	background-color:white;
+	letter-spacing : 0.3px;
+	word-spacing : 1px;
+	line-height : 18px;
+	word-wrap: break-word;
+	word-break: break-all;
+}
+.noticeContent{
+	display:inline-block;
+	border: 0.5px solid silver;
+	border-radius:5px;
+	padding:5px;
+	margin: 3px;
+	background-color:white;
+	letter-spacing : 0.3px;
+	word-spacing : 1px;
+	line-height : 18px;	
+}
+.chatTime{
+	display:inline-block;
+	color:silver;
+	align:right;
+}
+.file_input{
+	display: hidden;
+}
+.file_input_textbox {
+    float:left;
+    height:29px;
+    display: none;
+}
+.file_input_div {
+    position:relative;
+    width:80px;
+    height:36px;
+    overflow:hidden;
+}
+.file_input_img_btn {
+    padding:0 0 0 5px;
+    display:inline;
+}
+.file_input_hidden, .file_input_img_btn{
+	margin-top: 3px;
+	position: absolute;
+}
+
+#chatRoomMenu{
+	display: none;
+	background-color: white;
+	width: 100px;
+}
+ul, li{
+	width: 100%;
+	list-style: none;
+}
+#chatRoomMenu > button{
+	border: none;
+	background-color: none;
+	float: left;
+	margin: 5px;
+	font-size: 13px;
+	width: 90%;
+}
+#chatNotice{
+	display: none;
+	position: absolute !important;
+	top:80px !important;
+	left:150px !important;
+	z-index: 1000;
+}
+#chatTitle{
+	display: none;
+	position: absolute !important;
+	top:100px !important;
+	left:165px !important;	
+}
+
+#chatEmpList {
+	position: absolute;
+	width: 140px;
+	max-width: 160px;
+	height: 200px;
+	background-color: #fff;
+	z-index: 1000;
+	border : 2px solid black;
+	border-radius: 2px;
+	overflow-y: auto;
+	top: 30px !important;
+	left: 200px !important;
+	padding-left: 5px;
+	padding-top: 5px;
+}
+
+#mask {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 900;
+	background-color: #333;
+	opacity: 0.7;
+	display: none;
+}
+#chatEmpList > p, #chatEmpList > span{
+	font-size: 12px;	
+}
+.fileDiv {
+	margin: 3px auto;
+	text-align: center;
+	border: 0.5px solid black;
+	background-color: lightyellow;
+	display: inline-block;
+	padding-top:  10px;
+	padding-bottom:  10px;
+	line-height: 200%;
+	width: 180px;
+	margin-bottom: 6px;
+	padding-left: 3px;
+    padding-right: 3px;
+}
+.fileDownBtn {
+	float:none;
+	border: 1px solid black;
+	margin-bottom: 5px;
+}
+.fileP {
+	text-align: center;
+	margin: 0 auto;
+}
+

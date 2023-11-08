@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dao.CaritemDao">
+
+
+	<insert id="insertCaritem" parameterType="map">
+
+
+		insert into
+		caritem(carName,assigned,startDate,endDate,itemNo,typeName,status)
+
+		values(#{carName},#{assigned},#{startDate},#{endDate},1,#{typeName},1)
+
+	</insert>
+
+
+
+
+	<!-- <delete id="deleteCatitem" parameterType="map" > delete from caritem -->
+	<!-- where assigned = #{assigned} and rendNo = #{rendNo} </delete> -->
+
+
+	<update id="updateCaritem" parameterType="map">
+
+		update caritem set
+		startDate = #{startDate} , endDate = #{endDate}
+		where assigned =
+		#{assigned} and rendNo = #{rendNo}
+
+	</update>
+
+	<update id="updatestatusCaritem" parameterType="map">
+		update caritem
+		set status = 0
+		where assigned = #{assigned} and rendNo = #{rendNo}
+	</update>
+
+	<select id="selectAll" resultType="map" parameterType="String">
+
+
+		select
+		c.status,
+		c.rendNo,
+		c.carName,
+		c.typeName,
+		c.assigned,
+		e.empName,
+
+		
+		date_format(c.startDate,"%Y-%m-%d %h:%i") as startDate,
+		date_format(c.endDate,"%Y-%m-%d %h:%i") as endDate
+		from caritem c, emp e
+
+		where e.empNo = c.assigned and c.typeName =#{typeName};
+
+
+
+
+
+		<!-- select c.status, c.rendNo, c.carName, c.typeName, c.assigned, e.empName, 
+			date_format(c.startDate,"%Y-%m-%d %h:%i") as startDate, date_format(c.endDate,"%Y-%m-%d 
+			%h:%i") as endDate from caritem c, emp e where e.empNo = c.assigned -->
+
+	</select>
+	
+	<select id="mainselectAll" resultType="map">
+	select
+		c.status,
+		c.rendNo,
+		c.carName,
+		c.typeName,
+		c.assigned,
+        
+
+		
+		date_format(c.startDate,"%Y-%m-%d") as startDate,
+		date_format(c.endDate,"%Y-%m-%d") as endDate
+		from item i, caritem c
+
+		where i.typeName = c.typeName;
+	
+	
+	</select>
+
+
+	<select id="selectDate" parameterType="map" resultType="map">
+
+		<!-- SELECT * FROM caritem WHERE carName = #{carName} AND ( ( #{startDate} 
+			BETWEEN startDate AND endDate) OR ( #{endDate} BETWEEN startDate AND endDate) 
+			) -->
+
+		<!-- select carName,startDate,endDate from caritem where carName = #{carName} 
+			and #{startDate} between startDate and endDate or #{endDate} between startDate 
+			and endDate or #{startDate} <![CDATA[ >= ]]> startDate and #{endDate} <![CDATA[ 
+			<= ]]> endDate -->
+
+		select carName,startDate,endDate
+		from caritem
+		where carName =#{carName}
+	
+		and
+		(#{startDate} between startDate and endDate) or (#{endDate}
+		between startDate and endDate)
+		or (#{startDate} <![CDATA[ >= ]]>
+		startDate and #{endDate} <![CDATA[ <= ]]>endDate);
+
+	</select>
+
+
+	<!-- <select id="slectTest" parameterType="map" resultType="map"> select 
+		* from caritem where #{startDate} between startDate and endDate or #{endDate} 
+		between startDate and endDate or #{startDate} <![CDATA[>=]]> startDate and 
+		#{endDate} <![CDATA[<=]]> endDate </select> -->
+
+
+	<select id="totalCarCount" resultType="int" parameterType="map">
+		select count(*)
+
+
+		from caritem
+
+		where 1=0
+		<if test="carName != null"> or carName like concat('%',#{carName},'%')</if>
+		<if test="assigned != null"> or assigned like concat('%',#{assigned},'%')</if>
+		<if test="type == 0 "> or 1=1</if>
+
+	</select>
+
+
+
+
+
+
+	<select id="searchCaritem" resultType="map" parameterType="map">
+
+	<!-- select b1.* from ( select b.*,@rownum:=@rownum+1 as rnum,r.empName 
+		from caritem b left join emp r on b.assigned = r.empNo, (select @rownum:=0)r 
+		where 1=0 <if test="carName != null"> or carName like concat('%',#{carName},'%')</if> 
+		<if test="assigned != null"> or assigned like concat('%',#{assigned},'%')</if> 
+		<if test="type == 0 "> or 1=1</if> group by b.status,b.rendNo,b.carName,b.typeName,b.assigned 
+		order by rendNo desc) b1 where rnum between #{firstRow} and #{endRow}; -->
+		
+		
+		
+		
+		
+
+	
+	<!-- 
+ 		select b1.* from (
+		select b.rendNo,
+		b.status,
+		b.carName,
+		b.assigned,
+		date_format(b.startDate,"%Y-%m-%d %h:%i") as startDate,
+		date_format(b.endDate,"%Y-%m-%d %h:%i") as endDate,
+		b.itemNo,
+		b.typeName,@rownum:=@rownum+1 as rnum,r.empName from
+		caritem b left join emp
+		r on b.assigned = r.empNo, (select @rownum:=0)r
+		where 1=0
+		<if test="carName != null"> or carName like concat('%',#{carName},'%')</if>
+		<if test="assigned != null"> or assigned like concat('%',#{assigned},'%')</if>
+		<if test="type == 0 "> or 1=1</if>
+		
+
+		group by b.status,b.rendNo,b.carName,b.typeName,b.assigned order by
+		rendNo desc) b1
+	where rnum between #{firstRow} and #{endRow}
+	 -->
+		
+		
+		 
+ 		select b1.* from (
+		select b.rendNo,
+		b.status,
+		b.carName,
+		b.assigned,
+		date_format(b.startDate,"%Y-%m-%d %h:%i") as startDate,
+		date_format(b.endDate,"%Y-%m-%d %h:%i") as endDate,
+		b.itemNo,
+		b.typeName,@rownum:=@rownum+1 as rnum,r.empName from
+		caritem b left join emp
+		r on b.assigned = r.empNo, (select @rownum:=0)r
+		where 1=0
+		<if test="carName != null"> or carName like concat('%',#{carName},'%')</if>
+		<if test="assigned != null"> or assigned like concat('%',#{assigned},'%')</if>
+		<if test="type == 0 "> or 1=1</if>
+        and typeName = #{typeName}
+		
+
+		group by b.status,b.rendNo,b.carName,b.typeName,b.assigned order by
+		rendNo desc) b1
+	where rnum between #{firstRow} and #{endRow};
+		
+		
+
+	</select>
+
+
+
+
+
+
+
+
+
+
+</mapper>

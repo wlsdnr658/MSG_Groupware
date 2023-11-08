@@ -1,0 +1,542 @@
+@charset "UTF-8";
+
+html {
+	width: 1913px;
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	/* 	font-family: sans-serif; */
+	font-family: 'Nanum Gothic', sans-serif;
+}
+
+body {
+	/* 	font-family: sans-serif; */
+	font-family: 'Nanum Gothic', sans-serif;
+	background-color: white;
+}
+
+li {
+	list-style: none;
+}
+
+a {
+	text-decoration: none;
+	color: #333;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+a:hover {
+	color: #fb2525;
+}
+
+div {
+	color: #333;
+}
+
+img {
+	border: 0;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 12px;
+	line-height: 24px;
+	text-align: center;
+}
+
+#content {
+	width: 1400px;
+	margin: 0 auto;
+	overflow: hidden;
+	margin-left: 13%;
+	background-color: white;
+}
+/* 메시지 박스 th*/
+.msg_th {
+	background: #F9F9F9;
+	margin: 0;
+	text-align: left;
+	font-size: 15px;
+	padding: 7px;
+}
+
+.sideList {
+	padding-left: 10px;
+	font-size: 13px;
+}
+
+.sideBox_sub {
+	display: none;
+}
+/* 	본문 부분 */
+#menuBox2 {
+	width: 800px;
+	background-color: white;
+	margin-top: 23.5px;
+	margin-left: 300px;
+}
+
+/* 본문 하단(추가탭) */
+#menuBox3 {
+	width: 800px;
+	background-color: white;
+	margin-top: 300px;
+	margin-left: 280px;
+}
+
+#menuBox2>hr, #menuBox3>hr {
+	border: 1.5px solid gray;
+}
+/* 받은 메시지함 */
+#messageTable {
+	border: none;
+	margin-top: 2px;
+}
+
+#messageTable th {
+	padding: 2px;
+	margin-bottom: 2px;
+}
+
+#messageTable td {
+	padding: 5px;
+	text-align: left;
+	margin-bottom: 2px;
+}
+
+#allCheck {
+	margin-left: 3px;
+}
+
+.pageNumber {
+	font-size: 16px;
+	padding-right: 5px;
+}
+
+#msg-deleteBtn, #msg-deleteBtn-ever, #msg-restoreBtn {
+	margin-left: 20px;
+}
+
+#msg_hr {
+	border: 1.5px solid #fb2525;
+}
+
+#pagingBox {
+	font-size: 12px;
+	margin-left: 300px;
+	display: inline-block;
+	width: 800px;
+}
+
+#paging {
+	width: 50%;
+	margin-left: 30%;
+	display: inline-block;
+}
+
+#msg-deleteBtn {
+	padding: 5px;
+	color: #333;
+	background-color: #fff;
+	border: 0.5px solid gray;
+	cursor: pointer;
+}
+
+#msg_searchBox {
+	float: right;
+}
+
+#searchType {
+	
+}
+
+#msg_searchBox>input[type="submit"], #msg_searchBox>input[type="text"],
+	#msg_searchBox>select {
+	display: inline-block;
+	padding: 5px;
+	color: #333;
+	background-color: #fff;
+	border: 0.5px solid gray;
+}
+
+#msg_searchBox>input[type="submit"] {
+	margin-left: 10px;
+	cursor: pointer;
+}
+
+#msg_searchBox>input[type="text"] {
+	margin-left: 10px;
+	margin-top: 1px;
+}
+/* /*쓰기 화면*/
+/* #msg_sendBox>#receiver { */
+/* 	width: 46.5%; */
+/* } */
+#msg_title {
+	width: 70%;
+	height: 25px;
+}
+
+#msg_sendBox>p {
+	font-size: 12px;
+	margin-top: 5px;
+}
+.messageTitle{
+	padding-left: 5px;
+	font-size: 14px;
+}
+.messageTitle:hover {
+	font-size: 15px;
+}
+
+.replyModal:hover {
+	font-size: 14px;
+}
+
+#msg_sendBox>input[type="button"], #msg_sendBox>input[type="submit"] {
+	text-align: center;
+	display: inline-block;
+	padding: 10px;
+	color: #333;
+	background-color: #fff;
+	border: 0.5px solid silver;
+	cursor: pointer;
+	margin-right: 50px;
+}
+
+#callChart_btn {
+	height: 22px;
+	margin-bottom: 3px;
+	padding-top: 0px !important;
+}
+
+#callChart_btn:hover {
+	background-color: red;
+}
+
+.replyModal {
+	font-size: 12px;
+}
+
+.messageContent {
+	margin-left: 10px;
+	display: none;
+	word-wrap: break-word;
+	word-break: break-all;
+}
+
+#modal-reply {
+	display: none;
+	width: 50px;
+	height: 50px;
+	background-color: gray;
+	top: 40%;
+	left: 40%;
+	padding: 10px;
+	margin-top: -100px;
+	margin-left: -100px;
+	z-index: 1000;
+}
+
+#msg-write-btn, #btn-reply, #msg-receiver-btn {
+	text-align: center;
+	display: inline-block;
+	padding: 3px;
+	color: #333;
+	background-color: #fff;
+	border: 0.5px solid silver;
+}
+
+#btn-reply {
+	font-size: 12px;
+	cursor: pointer;
+}
+
+#naviLine {
+	width: 500px !important;
+	text-align: center;
+}
+
+#receiver {
+	margin-bottom: 10px;
+}
+
+#chatRoom-list {
+	width: 800px;
+	height: auto;
+	max-height: 500px;
+	overflow-y: auto;
+}
+
+#chatRoom-inviteList {
+	width: 800px;
+	height: auto;
+	max-height: 500px;
+	overflow-y: auto;
+}
+
+#th1 {
+	text-align: left;
+	font-size: 12px;
+	width: 80%;
+}
+
+#th2 {
+	font-size: 12px;
+}
+
+#th1, #th2 {
+	font-weight: normal;
+}
+
+/* 	#chatRoom-list > tr > #th2{ */
+/* 		width: 19%; */
+/* 		text-align: center; */
+/* 	} */
+.chatList-tr {
+	text-align: left;
+	font-size: 15px;
+	padding: 15px;
+}
+
+.chatList-title-a {
+	margin-left: 20px;
+}
+
+.chatList-tr>span {
+	font-size: 12px;
+	color: orange;
+}
+
+#menuBox2_span {
+	font-size: 16px !important;
+	font-weight: bold;
+}
+
+#messageWriteTarget_Div {
+	display: inline-block;
+	width: 70%;
+	min-height: 20px;
+	border: 0.5px solid darkgray;
+	padding-left: 4px;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	height: auto;
+	margin-top: 5px;
+}
+
+.msg_write_target {
+	display: inline-block;
+	background-color: beige;
+	margin-top: 3px;
+	margin-right: 5px;
+	font-size: 11px;
+	padding: 1px;
+}
+
+table td {
+	text-align: left;
+}
+
+#chatRoomAdd_modal {
+	position: absolute; top : 230px;
+	left: 560px;
+	width: 250px;
+	margin: 0 auto;
+	display: none;
+	z-index: 1000;
+	background-color: #fff;
+	border: 1px solid #fb2525;
+	border-radius: 5px;
+	padding: 10px;
+	top: 230px;
+}
+
+#msgReadCount {
+	font-size: 11px;
+	color: red;
+}
+
+#chat-title {
+	width: 70%;
+}
+
+#chatRoomAdd_modal form input[type="button"], #chatRoomAdd_modal form input[type="submit"]
+	{
+	color: #333;
+	background-color: #fff;
+	border: 0.5px solid silver;
+	margin-left: 30px;
+	padding: 3px;
+	margin-bottom: 2px;
+}
+
+#chatRoomAdd_modal form input[type="submit"] {
+	margin-left: 60px !important;
+}
+
+#mask2 {
+	position: absolute; left : 0;
+	top: 0;
+	z-index: 900;
+	background-color: gray;
+	opacity: 0.5;
+	display: none;
+	left: 0;
+}
+
+#chatInvite {
+	overflow: auto;
+}
+
+#chart_div img {
+	width: 60px;
+	height: 60px;
+}
+
+#chart_div {
+	position: absolute;
+	top: 300px;
+	left: 600px;
+	width: 550px;
+	height: 400px;
+	background-color: #F6F6F6;
+	display: inline-block;
+	padding: 30px;
+	z-index: 1000;
+	border: 1px solid lightgray;
+}
+
+#chart {
+	float: left;
+	width: 180px;
+	height: 320px;
+	background-color: #F6F6F6;
+	display: inline-block;
+	padding: 30px;
+	z-index: 1000;
+	border: 1px solid lightgray;
+}
+
+#rightPointer {
+	position: absolute;
+	top: 170px;
+}
+
+#leftPointer {
+	position: absolute;
+	top: 220px;
+	margin-top: 20px;
+}
+
+#selected {
+	float: right;
+	width: 180px;
+	height: 320px;
+	background-color: #F6F6F6;
+	display: inline-block;
+	padding: 30px;
+	z-index: 1000;
+	border: 1px solid lightgray;
+}
+
+#mask {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 900;
+	background-color: #333;
+	opacity: 0.7;
+	display: none;
+}
+
+#chart>ul img {
+	width: 16px;
+	height: 16px;
+	margin-right: 5px;
+}
+
+#selected>ul img {
+	width: 16px;
+	height: 16px;
+	margin-right: 5px;
+}
+
+#selected>ul {
+	float: left;
+	width: 180px;
+}
+
+#selected>ul>li {
+	text-align: left;
+}
+
+#selected>ul>li>a {
+	cursor: pointer;
+}
+
+#selected>ul>li>ul {
+	width: 150px;
+	margin-left: 50px;
+	text-align: left;
+}
+
+#selected>ul>li>ul li {
+	margin-top: 10px;
+}
+
+#chartBtn {
+	width: 50px;
+	height: 30px;
+	position: absolute; margin-top : 390px;
+	margin-left: 250px;
+	margin-top: 390px;
+}
+
+#chart>ul {
+	float: left;
+	width: 180px;
+}
+
+#chart>ul>li {
+	text-align: left;
+}
+
+#chart>ul>li>a {
+	cursor: pointer;
+}
+
+#chart>ul>li>ul {
+	width: 150px;
+	margin-left: 50px;
+	text-align: left;
+}
+
+#chart>ul>li>ul li {
+	margin-top: 10px;
+}
+
+.deptPos, .name {
+	font-size: 12px;
+	width: 20px;
+}
+.chatListBtn{
+    margin-right: 50px;
+    background-color: white;
+    padding: 3px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+    cursor: pointer;
+}
+#chat-join, #chat-reject{
+	margin-right: 20px;
+    background-color: white;
+    padding: 3px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+    cursor: pointer;	
+}

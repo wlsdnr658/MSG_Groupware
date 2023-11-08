@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dao.ChatDao">
+   <!-- 채팅방 생성 -->
+   <insert id="insertChatRoom" parameterType="map">
+      INSERT chat_room
+      VALUES (null
+            ,#{title}
+            ,null
+            ,1)
+       <selectKey resultType="int" keyProperty="roomNo" order="AFTER">
+           SELECT LAST_INSERT_ID()
+       </selectKey>
+   </insert>
+   <!-- 채팅 참여 -->
+   <insert id="insertChatRoomUser" parameterType="map">
+      INSERT INTO chat_emp
+      VALUES (#{roomNo}
+            ,#{empNo})
+   </insert>
+   <!-- 채팅 참여 후 참여자 카운트 증가. -->
+   <insert id="incrementEmpNum" parameterType="map">
+      UPDATE chat_room
+         SET empNum = empNum+1
+       WHERE roomNo = #{roomNo}
+   </insert>
+   <!-- 채팅방 제목, 공지 확인 -->
+   <select id="selectChatRoomByRoomNo" parameterType="string" resultType="map">
+      SELECT * FROM chat_room
+       WHERE roomNo = #{roomNo}
+   </select>
+   <!-- 참여 중인 채팅방 목록 확인 -->
+   <select id="chatRoom_view" parameterType="string" resultType="map">
+      SELECT * FROM chatRoom_view
+       WHERE empNo = #{empNo}
+   </select>
+   <!-- 채팅방 오픈 시 대상이 채팅방 참여자인지 확인. 1이면 참여자. -->
+   <select id="chatEmpCheck" parameterType="map" resultType="int">
+      SELECT COUNT(*) FROM chat_emp
+         WHERE roomNo = #{roomNo}
+          AND empNo = #{empNo}
+   </select>
+   <!-- 채팅방 참여자 수 확인 -->
+   <select id="selectNumOfEmpByRoom" parameterType="string" resultType="string">
+      SELECT COUNT(*)
+        FROM chat_emp
+       WHERE roomNo = #{roomNo};
+   </select>
+   
+   <!-- 채팅 리스트 -->
+   <select id="selectChatListByRoom" parameterType="map" resultType="map">
+      SELECT *, 
+             DATE_FORMAT(writeDate, '%H:%i') as wDate
+          FROM chatContentByRoom_view
+       WHERE roomNo = #{roomNo}
+       ORDER BY contentNo
+   </select>
+   <!-- 참여자 리스트 -->
+   <select id="room_empList" parameterType="string" resultType="map">
+      SELECT * FROM room_empList
+       WHERE roomNo = #{roomNo}
+       ORDER BY empNo;
+   </select>
+   
+   
+   
+   <!-- 채팅 저장 -->
+   <insert id="insertChatContent" parameterType="map">
+      INSERT INTO chat_content
+      VALUES (null
+            ,#{content}
+            ,NOW()
+            ,#{empNo}
+            ,<include refid="fileName"/>
+            ,#{roomNo}
+            )
+   </insert>
+   <!-- 공지 저장 -->
+   <update id="updateRoomNotice" parameterType="map">
+      UPDATE chat_room
+      SET roomNotice = #{roomNotice}
+      WHERE roomNo = #{roomNo};
+   </update>
+   <insert id="insertFileByChat" parameterType="map">
+      INSERT INTO uploadFromChatRoom
+      VALUES(null,#{fileName},#{roomNo})
+      <selectKey resultType="int" keyProperty="fileNo" order="AFTER">
+           SELECT LAST_INSERT_ID()
+       </selectKey>
+   </insert>
+   <insert id="insertChatFile" parameterType="map">
+      INSERT INTO chat_content
+      VALUES (null
+         ,#{content}
+         ,NOW()
+         ,#{empNo}
+         ,#{fileName}
+         ,#{roomNo}
+         )
+   </insert>
+   <!-- 채팅 초대 -->
+   <insert id="chat_invite" parameterType="map">
+      INSERT INTO chat_invite
+      VALUES (#{roomNo}, #{empNo}, #{inviteEmpNo})
+   </insert>
+   <!-- 초대받은 채팅방 목록 -->
+   <select id="selectInviteList" parameterType="string" resultType="map">
+      SELECT * FROM chatInvite_view
+       WHERE empNo = #{empNo}
+   </select>
+   <!-- 채팅 초대 승인 -->
+   <insert id="insertChatEmp" parameterType="map">
+      INSERT INTO chat_emp
+      VALUES (#{roomNo}, #{empNo})
+   </insert>
+   <!-- 채팅 초대 거절 -->
+   <delete id="chat_reject" parameterType="map">
+      DELETE FROM chat_invite
+       WHERE roomNo = #{roomNo}
+         AND EMPNO = #{empNo}
+   </delete>
+   <!-- 채팅방 나가기 -->
+   <delete id="deleteChatEmp" parameterType="map">
+      DELETE FROM chat_emp
+       WHERE roomNo = #{roomNo}
+         AND empNo = #{empNo} 
+   </delete>
+   <!-- 채팅 퇴장 후 참여자 카운트 감소. -->
+   <insert id="decrementEmpNum" parameterType="map">
+      UPDATE chat_room
+         SET empNum = empNum-1
+       WHERE roomNo = #{roomNo}
+   </insert>
+   <sql id="fileName">
+      <choose>
+         <when test="fileName != null">
+            #{fileName}
+         </when>
+         <otherwise>
+            null
+         </otherwise>
+      </choose>
+   </sql>
+   
+</mapper>

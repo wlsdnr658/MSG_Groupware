@@ -1,0 +1,89 @@
+	#content{
+		width: 1400px;
+	    margin-left: 13%;
+	    background-color: white;
+	}
+	
+	#content > p > a {
+		font-family: monospace;
+		font-weight: normal;
+	}
+	
+	#table {
+		position: absolute;
+		margin-top: 30px;
+		margin-left: 10px;
+		width: 750px;
+	}
+	
+	#tr1 {
+		font-size: 17px;
+		padding: 8px;
+	}
+	
+	th {
+		background-color: #E6E6E6;
+		padding: 8px;
+	}
+
+	#content > #menuBox1 {
+		position: absolute;
+		width : 200px;
+		height: 400px;
+		background-color: white;
+/* 		border-bottom: 0.5px solid #fb2525; */
+		margin-top: 20px;
+		margin-left: 20px;
+	}
+		
+	#hr1 {
+		border: 1.5px solid #fb2525;
+	}
+	
+	#hr2 {
+		border: 0.5px solid #fb2525;
+		margin-top: 120px;
+	}
+	
+	#hr3 {
+		border: 1.5px solid gray;
+	}
+	
+	#hr4 {
+		border: 1px solid silver;
+		margin-top: 600px;
+	}
+		
+	#content > #menuBox1 > #menuBox1Ul > li > a {
+		font-size: 15px;
+	}
+	
+	#content > #menuBox1 > #menuBox1Ul {
+		padding-left: 30px;
+	}
+	
+	/* �޴��ڽ�2 (board_main_css)*/
+	#content > #menuBox2 {
+		position: absolute;
+		width : 800px;
+		height : 170px;
+		background-color: white;
+		margin-top : 27px;
+		margin-left : 300px;
+	}
+	#mngDetail{
+		display : none;
+		margin-left : 30px;
+	}
+	#mngDetail > li{
+		margin-top : 10px;
+	}
+	#mngDetail > li > a{
+		font-size: 14px !important;
+		color : gray !important;
+	}
+	#mngDetail > li > a:hover{
+		color : #fb2525 !important;
+	}
+	
+	

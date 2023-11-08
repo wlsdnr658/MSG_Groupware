@@ -1,0 +1,180 @@
+/* �ʱ�ȭ */
+* {
+   margin: 0;
+   padding: 0;
+}
+
+body {
+/*    font-family: sans-serif; */
+font-family: 'Nanum Gothic', sans-serif;
+}
+
+.reservation, #reservation_check{
+	border : 0.5px solid gray;
+	border-radius : 3px;
+	background-color: floralwhite;
+	padding : 3px;
+	height: 30px;
+	box-shadow: 1px 1px;
+}
+
+li {
+   list-style: none;
+}
+
+a {
+   text-decoration: none;
+   color: black;
+   font-weight: bold;
+}
+
+a:hover {
+   color: #fb2525;
+}
+
+div {
+   color: #333;
+}
+
+img {
+   border: 0;
+}
+
+/*    ������ */
+#content {
+	width: 1400px;
+    margin-left: 13%;
+    background-color: white;
+}
+
+#content>#nameBox {
+   position: absolute;
+   width: 200px;
+   height: 100px;
+   margin-left: 260px;
+   margin-top: 20px;
+}
+
+#content>p>a {
+   font-family: monospace;
+   font-weight: normal;
+}
+
+#notice_list {
+   position: absolute;
+   margin-top: 30px;
+   margin-left: 10px;
+   width: 750px;
+   border-collapse: collapse;
+}
+
+#tr1>th {
+   background-color: #e4e7ea;
+   padding: 5px;
+   border-bottom: 2px solid #eceef1;
+   font-size: 14px;
+   text-align: center;
+   line-height: 17px;
+}
+
+#tr2>td {
+   font-size: 13px;
+   border-bottom: 1px solid #eceef1;
+   text-align: center;
+   padding: 3px;
+}
+
+/* �޴��ڽ�2 (board_main_css)*/
+#content>#menuBox2 {
+   position: absolute;
+   width: 800px;
+   height: 170px;
+   background-color: white;
+   margin-top: 50px;
+   margin-left: 260px;
+}
+
+#menuBox1Ul>.menu >#inside > li{
+	margin-left: 50px;
+	
+}
+
+
+#content>#menuBox2>#writeBox {
+   width: 700px;
+   height: 500px;
+   border-top: 2px solid gray;
+   border-bottom: 2px solid gray;
+   margin-top: 10px;
+   margin-left: 30px;
+}
+
+#writeTable {
+   width: 600px;
+   margin-left: 40px;
+   margin-top: 10px;
+   text-align: center;
+}
+table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 12px;
+	line-height: 24px;
+	text-align: center;
+}
+
+table td, th {
+	padding: 5px;
+}
+
+th {
+	background: silver;
+	 padding-top: 10px;
+   padding-bottom: 10px;
+}
+
+
+td {
+   padding: 5px;
+}
+/* �޴��ڽ�3 (board_main_css)*/
+#content>#menuBox3 {
+   position: absolute;
+   width: 800px;
+   height: 200px;
+   background-color: white;
+   margin-top: 290px;
+   margin-left: 260px;
+}
+/* �޴��ڽ�4 (board_main_css)*/
+#content>#menuBox4 {
+   position: absolute;
+   width: 800px;
+   height: 200px;
+   background-color: white;
+   margin-top: 520px;
+   margin-left: 260px;
+}
+
+/*    Ǫ��     */
+#main_footer {
+   width: 100%;
+   margin: 0 auto;
+   height: 110px;
+   position: relative;
+   top: 30px;
+   border-top: 1px solid #fb2525;
+}
+.menu a {
+	cursor: pointer;
+}
+
+.menu .hide {
+	visibility:  hidden;
+}
+#auth {
+	display: none !important;
+}
+#main_lnb img {
+	position: absolute;
+}

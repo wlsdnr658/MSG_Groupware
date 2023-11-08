@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+ 
+
+<mapper namespace = "dao.EmpDao">
+
+	<select id="getMember" parameterType="map" resultType="map">
+
+		SELECT * FROM emp WHERE empNo = #{EMPNO}
+
+	</select>
+
+	<select id = "getMemberInfo" parameterType="string" resultType="map">
+
+		SELECT * FROM empInfo WHERE empNo = #{EMPNO}
+
+	</select>
+
+	<select id="getFileName" parameterType="string" resultType="string">
+
+		SELECT imgName FROM empPic where empNo = #{empNo}
+
+	</select>
+
+	<select id="getStampName" parameterType="string" resultType="string">
+
+		SELECT empStamp FROM emp where empNo = #{empNo}
+
+	</select>
+
+	<update id="modifyEmpByAdmin" parameterType="map">
+
+		UPDATE emp SET empName = #{NAME}, 
+
+						<if test='POS != "0"'>empPos = #{POS}, </if>
+
+						<if test='DEPT != "0"'>deptNo = #{DEPT}, </if>
+
+						empTel = #{TEL} 
+
+						where empNo = #{EMPNO}
+
+		 
+
+	</update>
+
+	<update id ="modifyEmpByUser" parameterType="map">
+
+		UPDATE emp SET empMail = #{EMPMAIL}, empTel = #{EMPTEL} where empNo = #{empNo}
+
+	</update>
+
+	<insert id = "modifyEmpPic" parameterType="map">
+
+		INSERT INTO empPic (imgName, empNo)
+
+		VALUES (#{FILE}, #{EMPNO})
+
+		ON DUPLICATE KEY
+
+		UPDATE empNo= #{EMPNO}, imgName=#{FILE};
+
+	</insert>
+
+	<select id = "selectOne" resultType="map" parameterType="string">
+
+		SELECT * FROM empAllInfo WHERE empNo = #{empNo}
+
+	</select>
+
+	<select id = "selectByDept" resultType="map" parameterType="string">
+
+		SELECT * 
+
+		FROM (SELECT * FROM empInfo ORDER BY deptName, mappingNum) E
+
+		WHERE deptName = #{dept}
+
+	</select>
+
+	<select id = "selectOderedAll_B" resultType="map">
+
+		SELECT * 
+
+		FROM (SELECT * FROM empInfo ORDER BY deptName, mappingNum) E;
+
+	</select>
+
+ 
+
+	<select id="getEmpTotal" parameterType="map" resultType="int">
+
+		SELECT COUNT(*)
+
+		FROM empInfo
+
+		WHERE 1 = 0
+
+		<if test = "type == 0">or 1=1</if>
+
+		<if test = "SEARCHNAME != null">OR empName LIKE CONCAT('%',#{keyword},'%')</if>
+
+		<if test = "SEARCHDEPT != null">OR deptName LIKE CONCAT('%',#{keyword},'%')</if>
+
+	</select>
+
+	<select id = "selectOderedAll" resultType="map" parameterType="map">
+
+	SELECT *
+
+	FROM(
+
+		SELECT @rownum := @rownum+1 as rnum, empNo, empName, empMail, empTel, empPos, empSd, empOd, mappingNum, deptNo, deptName
+
+		FROM(
+
+			SELECT * 
+
+			FROM (SELECT * FROM empInfo) E
+
+		) a
+
+		, (SELECT @rownum := 0) dummy
+
+		WHERE 1 = 0
+
+		<if test = "type == 0">or 1=1</if>
+
+		<if test = "SEARCHNAME != null">OR empName LIKE CONCAT('%',#{keyword},'%')</if>
+
+		<if test = "SEARCHDEPT != null">OR deptName LIKE CONCAT('%',#{keyword},'%')</if>
+
+		ORDER BY deptName, mappingNum
+
+	) list
+
+	WHERE rnum BETWEEN #{firstRow} AND #{endRow}
+
+	</select>
+
+	
+
+	<select id="getEmpsByName" parameterType="string" resultType="map">
+
+		SELECT empName, deptName, empNo
+
+		FROM empInfo
+
+		WHERE empName LIKE CONCAT('%',#{input_Name},'%')
+
+	</select>
+
+	
+
+	<select id="getEmpByNameAndDeptName" parameterType="map" resultType="map">
+
+		SELECT *
+
+		FROM empInfo
+
+		WHERE empName LIKE #{empName}
+
+		AND deptName LIKE #{deptName}
+
+	</select>
+
+</mapper>
